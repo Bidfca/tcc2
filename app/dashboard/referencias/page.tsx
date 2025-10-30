@@ -13,10 +13,13 @@ import {
   Bookmark,
   BookmarkCheck,
   Loader2,
-  Filter,
   Calendar,
   User,
-  FileText
+  FileText,
+  FileDown,
+  Tag,
+  Hash,
+  Quote
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { ReferencesLoadingSkeleton } from '@/components/skeleton'
@@ -32,6 +35,16 @@ interface Article {
   source: 'scielo' | 'crossref'
   saved?: boolean
   doi?: string
+  // Campos expandidos
+  issn?: string
+  volume?: string
+  issue?: string
+  pages?: string
+  keywords?: string[]
+  language?: string
+  pdfUrl?: string
+  citationsCount?: number
+  publishedDate?: string
 }
 
 export default function ReferenciasPage() {
@@ -177,7 +190,7 @@ export default function ReferenciasPage() {
       } else {
         setAddByUrlMessage({ type: 'error', text: data.error })
       }
-    } catch (error) {
+    } catch {
       setAddByUrlMessage({ type: 'error', text: 'Erro ao adicionar artigo. Tente novamente.' })
     } finally {
       setIsAddingByUrl(false)
@@ -428,8 +441,30 @@ export default function ReferenciasPage() {
                           {article.abstract}
                         </p>
                         
+                        {/* Keywords */}
+                        {article.keywords && article.keywords.length > 0 && (
+                          <div className="flex items-start gap-2 mb-3">
+                            <Tag className="h-4 w-4 text-muted-foreground mt-0.5" />
+                            <div className="flex flex-wrap gap-1">
+                              {article.keywords.slice(0, 5).map((keyword, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2 py-0.5 text-xs bg-muted rounded-full text-muted-foreground"
+                                >
+                                  {keyword}
+                                </span>
+                              ))}
+                              {article.keywords.length > 5 && (
+                                <span className="px-2 py-0.5 text-xs text-muted-foreground">
+                                  +{article.keywords.length - 5}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        
                         <div className="flex justify-between items-center">
-                          <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-3 flex-wrap gap-y-2">
                             <a
                               href={article.url}
                               target="_blank"
@@ -439,6 +474,17 @@ export default function ReferenciasPage() {
                               Acessar artigo
                               <ExternalLink className="h-4 w-4 ml-1" />
                             </a>
+                            {article.pdfUrl && (
+                              <a
+                                href={article.pdfUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center text-red-600 hover:text-red-700 text-sm font-medium"
+                              >
+                                <FileDown className="h-4 w-4 mr-1" />
+                                PDF
+                              </a>
+                            )}
                             {article.doi && (
                               <a
                                 href={`https://doi.org/${article.doi}`}
@@ -496,8 +542,8 @@ export default function ReferenciasPage() {
                 <h3 className="text-lg font-semibold text-foreground mb-4">
                   🔗 Adicionar Artigo por Link/DOI
                 </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Cole um link com DOI ou a URL de um artigo para adicioná-lo diretamente à sua biblioteca.
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Cole a URL de qualquer artigo (SciELO, PubMed, sites acadêmicos, etc.) para adicioná-lo diretamente à sua biblioteca. Se a URL contiver um DOI, buscaremos automaticamente os metadados completos do artigo.
                 </p>
                 
                 <div className="flex gap-3">
@@ -562,7 +608,7 @@ export default function ReferenciasPage() {
                           </div>
                         </div>
                         
-                        <div className="flex items-center text-sm text-muted-foreground mb-2 space-x-4">
+                        <div className="flex items-center text-sm text-muted-foreground mb-2 space-x-4 flex-wrap">
                           <div className="flex items-center">
                             <User className="h-4 w-4 mr-1" />
                             {Array.isArray(article.authors) 
@@ -578,21 +624,83 @@ export default function ReferenciasPage() {
                             <FileText className="h-4 w-4 mr-1" />
                             {article.journal}
                           </div>
+                          {article.volume && (
+                            <div className="flex items-center text-xs">
+                              Vol. {article.volume}{article.issue && `, Nº ${article.issue}`}
+                            </div>
+                          )}
+                          {article.issn && (
+                            <div className="flex items-center text-xs">
+                              <Hash className="h-3 w-3 mr-1" />
+                              ISSN: {article.issn}
+                            </div>
+                          )}
+                          {article.citationsCount !== undefined && article.citationsCount > 0 && (
+                            <div className="flex items-center text-xs font-semibold text-green-600">
+                              <Quote className="h-3 w-3 mr-1" />
+                              {article.citationsCount} citações
+                            </div>
+                          )}
                         </div>
                         
                         <p className="text-foreground/80 text-sm mb-3 line-clamp-3">
                           {article.abstract}
                         </p>
                         
-                        <a
-                          href={article.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center text-green-600 hover:text-green-700 text-sm font-medium"
-                        >
-                          Ler artigo completo
-                          <ExternalLink className="h-4 w-4 ml-1" />
-                        </a>
+                        {/* Keywords */}
+                        {article.keywords && article.keywords.length > 0 && (
+                          <div className="flex items-start gap-2 mb-3">
+                            <Tag className="h-4 w-4 text-muted-foreground mt-0.5" />
+                            <div className="flex flex-wrap gap-1">
+                              {article.keywords.slice(0, 5).map((keyword, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2 py-0.5 text-xs bg-muted rounded-full text-muted-foreground"
+                                >
+                                  {keyword}
+                                </span>
+                              ))}
+                              {article.keywords.length > 5 && (
+                                <span className="px-2 py-0.5 text-xs text-muted-foreground">
+                                  +{article.keywords.length - 5}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center space-x-3 flex-wrap gap-y-2">
+                          <a
+                            href={article.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center text-green-600 hover:text-green-700 text-sm font-medium"
+                          >
+                            Ler artigo completo
+                            <ExternalLink className="h-4 w-4 ml-1" />
+                          </a>
+                          {article.pdfUrl && (
+                            <a
+                              href={article.pdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center text-red-600 hover:text-red-700 text-sm font-medium"
+                            >
+                              <FileDown className="h-4 w-4 mr-1" />
+                              PDF
+                            </a>
+                          )}
+                          {article.doi && (
+                            <a
+                              href={`https://doi.org/${article.doi}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center text-blue-600 hover:text-blue-700 text-xs"
+                            >
+                              DOI: {article.doi}
+                            </a>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

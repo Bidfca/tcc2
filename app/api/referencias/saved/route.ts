@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
@@ -23,16 +23,54 @@ export async function GET(request: NextRequest) {
 
     // Converter para formato esperado pelo frontend
     const articles = savedReferences.map(ref => {
-      const content = JSON.parse(ref.content || '{}')
+      // Parse de authors e keywords (que são JSON)
+      let authorsArray = []
+      try {
+        const authorsParsed = JSON.parse(ref.authors || '[]')
+        // Validar se é array antes de mapear
+        if (Array.isArray(authorsParsed)) {
+          authorsArray = authorsParsed.map((a: string | { name?: string }) => 
+            typeof a === 'string' ? a : a.name || 'Autor não disponível'
+          )
+        } else {
+          authorsArray = ['Autor não disponível']
+        }
+      } catch (e) {
+        console.error('Erro ao parsear authors:', e)
+        authorsArray = ['Autor não disponível']
+      }
+      
+      let keywordsArray = undefined
+      try {
+        if (ref.keywords) {
+          const parsed = JSON.parse(ref.keywords)
+          // Validar se é array
+          keywordsArray = Array.isArray(parsed) ? parsed : undefined
+        }
+      } catch (e) {
+        console.error('Erro ao parsear keywords:', e)
+        keywordsArray = undefined
+      }
+      
       return {
         id: ref.id,
         title: ref.title,
-        authors: content.authors || [],
-        abstract: content.abstract || '',
-        year: content.year || new Date().getFullYear(),
-        journal: content.journal || '',
+        authors: authorsArray,
+        abstract: ref.abstract || 'Resumo não disponível',
+        year: ref.year || new Date().getFullYear(),
+        journal: ref.journal || 'Revista',
         url: ref.url || '',
-        source: content.source || 'unknown',
+        source: ref.source || 'manual',
+        doi: ref.doi || undefined,
+        issn: ref.issn || undefined,
+        volume: ref.volume || undefined,
+        issue: ref.issue || undefined,
+        pages: ref.pages || undefined,
+        keywords: keywordsArray,
+        language: ref.language || undefined,
+        pdfUrl: ref.pdfUrl || undefined,
+        citationsCount: ref.citationsCount || undefined,
+        publishedDate: ref.publishedDate?.toISOString() || undefined,
         saved: true
       }
     })

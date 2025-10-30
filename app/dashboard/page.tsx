@@ -11,8 +11,7 @@ import {
   Calculator, 
   BookOpen, 
   FileSpreadsheet,
-  TrendingUp,
-  Search
+  TrendingUp
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 

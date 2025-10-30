@@ -8,6 +8,53 @@ Produção: `https://seu-dominio.com/api`
 
 ---
 
+## 📚 Integração SciELO ArticleMeta API
+
+### Visão Geral
+
+O AgroInsight integra a **API oficial do SciELO ArticleMeta** para busca de artigos científicos brasileiros e latino-americanos. A integração utiliza uma estratégia de API-first com fallback automático para web scraping.
+
+### API SciELO Base URL
+
+```
+http://articlemeta.scielo.org/api/v1/
+```
+
+### Estratégia de Busca
+
+1. **Primeira tentativa**: API ArticleMeta oficial (metadados completos)
+2. **Fallback**: Web scraping do portal de busca SciELO
+3. **Combinação com Crossref**: 60% SciELO + 40% Crossref quando `source='all'`
+
+### Coleções Disponíveis
+
+| Código | País/Região |
+|--------|-------------|
+| `scl` | Todas as coleções |
+| `bra` | Brasil |
+| `arg` | Argentina |
+| `chl` | Chile |
+| `col` | Colômbia |
+| `esp` | Espanha |
+| `mex` | México |
+| `prt` | Portugal |
+
+### Características
+
+- ✅ Metadados completos em múltiplos idiomas (PT, EN, ES)
+- ✅ Suporte a DOI e PID oficiais
+- ✅ Tratamento robusto de erros com fallback
+- ✅ Timeout configurado (15s para listagem, 10s por artigo)
+- ✅ Filtragem client-side por relevância
+
+### Recursos Adicionais
+
+- **Documentação:** https://scielo.readthedocs.io/projects/articlemeta/
+- **GitHub:** https://github.com/scieloorg/articles_meta
+- **Download em lote:** http://static.scielo.org/articlemeta/articles.json.zip  
+
+---
+
 ## 📑 ÍNDICE
 
 1. [Autenticação](#autenticação)

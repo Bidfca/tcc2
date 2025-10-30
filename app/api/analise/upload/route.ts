@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Papa from 'papaparse'
-import { analyzeDataset, VariableType } from '@/lib/dataAnalysis'
+import { analyzeDataset } from '@/lib/dataAnalysis'
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const data = parseResult.data as any[]
+    const data = parseResult.data as Record<string, unknown>[]
     
     if (data.length === 0) {
       return NextResponse.json({ 
@@ -53,8 +53,8 @@ export async function POST(request: NextRequest) {
     
     // Filtrar apenas variáveis zootécnicas
     const zootechnicalVariables = Object.entries(analysisResult.variablesInfo)
-      .filter(([_, info]) => info.isZootechnical)
-      .map(([name, _]) => name)
+      .filter(([, info]) => info.isZootechnical)
+      .map(([name]) => name)
     
     // Contar registros válidos
     const validRows = data.filter(row => 

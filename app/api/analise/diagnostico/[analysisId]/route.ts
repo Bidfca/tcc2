@@ -54,13 +54,13 @@ export async function GET(
       metodo: 'Análise baseada em referências zootécnicas (EMBRAPA, NRC)'
     })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('❌ Erro ao gerar diagnóstico:', error)
     
     return NextResponse.json(
       { 
         error: 'Erro ao gerar diagnóstico. Tente novamente.',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       },
       { status: 500 }
     )

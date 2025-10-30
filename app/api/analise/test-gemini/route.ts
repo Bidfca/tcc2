@@ -40,9 +40,9 @@ export async function GET() {
           response: text,
           apiKeyConfigured: true
         })
-      } catch (error: any) {
-        console.log(`❌ Falhou com modelo ${modelName}: ${error.message}`)
-        errors[modelName] = error.message
+      } catch (error) {
+        console.log(`❌ Falhou com modelo ${modelName}: ${(error as Error).message}`)
+        errors[modelName] = (error as Error).message
         continue
       }
     }
@@ -56,12 +56,12 @@ export async function GET() {
       suggestion: 'Tente gerar uma nova API key em https://aistudio.google.com/app/apikey'
     }, { status: 500 })
 
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({
       success: false,
-      error: error.message,
-      details: error.toString(),
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: (error as Error).message,
+      details: (error as Error).toString(),
+      stack: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
     }, { status: 500 })
   }
 }

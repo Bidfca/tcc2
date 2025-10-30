@@ -7,14 +7,27 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const { url } = await request.json()
+    // Parse JSON com tratamento de erro
+    let body
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json(
+        { error: 'JSON inválido na requisição' },
+        { status: 400 }
+      )
+    }
 
-    if (!url) {
-      return NextResponse.json({ error: 'URL do artigo é obrigatória' }, { status: 400 })
+    const { url } = body
+
+    if (!url || typeof url !== 'string') {
+      return NextResponse.json({ 
+        error: 'Campo "url" é obrigatório e deve ser string' 
+      }, { status: 400 })
     }
 
     // Remover artigo salvo

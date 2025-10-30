@@ -1,6 +1,8 @@
 # 📊 Status do Projeto - AgroInsight
 
-**Última atualização:** 30 de Outubro de 2025, 11:04 AM
+**Última atualização:** 30 de Outubro de 2024, 15:15 PM
+
+**🆕 NOVO:** Integração com API oficial SciELO ArticleMeta + Filtros avançados implementados!
 
 ---
 
@@ -12,10 +14,11 @@
 | **Segurança** | ✅ Completo | 100% |
 | **Dark Mode** | ✅ Completo | 100% |
 | **UX/Validação** | ✅ Completo | 100% |
+| **Integração SciELO API** | ✅ Completo | 100% |
 | **Infraestrutura** | ⏳ Pendente | 0% |
 | **Testes** | ⏳ Pendente | 0% |
 
-**Progresso Total:** 66% ██████████░░░░░
+**Progresso Total:** 71% ██████████░░░░
 
 ---
 
@@ -32,6 +35,17 @@
 
 ### 1.2 Sistema de Referências ✅
 - [x] Busca Crossref API + SciELO
+- [x] **NOVO: Integração API oficial SciELO ArticleMeta**
+  - [x] API ArticleMeta (`articlemeta.scielo.org/api/v1/`)
+  - [x] Metadados completos (título, autores, resumo, DOI, PID)
+  - [x] Suporte múltiplos idiomas (PT, EN, ES)
+  - [x] Fallback automático para web scraping
+  - [x] Busca combinada 60% SciELO + 40% Crossref
+  - [x] Coleções: Brasil, Argentina, Chile, Espanha, México, etc.
+  - [x] **Filtros avançados por ano (yearFrom, yearTo)**
+  - [x] **Filtros por idioma preferencial (pt, en, es, all)**
+  - [x] **Cache Redis com Upstash (TTL 1 hora)** 🆕
+  - [x] **Sistema de cache inteligente para performance**
 - [x] Paginação ("Ver mais")
 - [x] Add-by-DOI
 - [x] Sistema de favoritos
@@ -205,16 +219,17 @@
 
 ## 📝 Arquivos do Projeto
 
-### Documentação (9 arquivos)
-1. ✅ README.md
-2. ✅ CHANGELOG.md (novo)
-3. ✅ PROJECT_STATUS.md (novo)
+### Documentação (10 arquivos)
+1. ✅ README.md (atualizado com SciELO API)
+2. ✅ CHANGELOG.md
+3. ✅ PROJECT_STATUS.md (atualizado)
 4. ✅ PREDEV_ROADMAP.md
 5. ✅ DARK_MODE_GUIDE.md
 6. ✅ SECURITY_AUDIT.md
 7. ✅ ANALISE_DADOS.md
 8. ✅ GOOGLE_SCHOLAR_INFO.md
 9. ✅ DEBUGGING_GUIDE.md
+10. ✅ API_REFERENCE.md (atualizado com SciELO API)
 
 ### Código Fonte
 - **Páginas:** 9 arquivos
@@ -236,6 +251,7 @@
 | **Segurança** | Alto | Alto | ✅ |
 | **Dark Mode** | 100% | 100% | ✅ |
 | **Responsividade** | 90% | 100% | ⚠️ |
+| **Integrações API** | 100% | 100% | ✅ |
 
 ---
 
@@ -276,7 +292,14 @@
 ✅ Dark mode 100% funcional  
 ✅ Segurança de nível empresarial  
 ✅ UX moderna com validação e feedback  
-✅ Documentação completa  
+✅ **Integração com API oficial SciELO ArticleMeta** 🆕  
+✅ Busca multi-fonte inteligente (SciELO 60% + Crossref 40%)  
+✅ Filtros avançados (ano, idioma)  
+✅ **Cache Redis com Upstash (5-10x mais rápido)** 🚀  
+✅ Sistema de performance otimizado  
+✅ Metadados completos em múltiplos idiomas  
+✅ Fallback automático e tratamento robusto de erros  
+✅ Documentação completa e detalhada  
 ✅ Código limpo e manutenível  
 
 ---

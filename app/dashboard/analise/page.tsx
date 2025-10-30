@@ -7,7 +7,6 @@ import Link from 'next/link'
 import { useDropzone } from 'react-dropzone'
 import { 
   Sprout, 
-  Upload, 
   FileSpreadsheet, 
   ArrowLeft,
   CheckCircle,
@@ -140,7 +139,7 @@ export default function AnaliseDataPage() {
         setError(errorMsg)
         toast.error(errorMsg, { id: toastId })
       }
-    } catch (error) {
+    } catch {
       const errorMsg = 'Erro ao processar arquivo. Tente novamente.'
       setError(errorMsg)
       toast.error(errorMsg, { id: toastId })

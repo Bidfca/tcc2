@@ -143,18 +143,53 @@ model ProjectSetting {
 }
 
 model SavedReference {
-  id          String   @id @default(cuid())
-  userId      String
-  title       String
-  url         String?
-  content     String?
-  tags        String   // Comma-separated tags
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  userId          String
+  
+  // Metadados básicos
+  title           String
+  url             String?
+  doi             String?  // Digital Object Identifier
+  abstract        String?  // SQLite não precisa de @db.Text
+  
+  // Autores e publicação
+  authors         String   // JSON array: [{name, affiliation}]
+  year            Int?
+  publishedDate   DateTime?
+  language        String?  // pt, en, es
+  
+  // Journal/Revista
+  journal         String?
+  issn            String?  // International Standard Serial Number
+  volume          String?
+  issue           String?
+  pages           String?  // Ex: "123-145"
+  
+  // Categorização
+  keywords        String?  // JSON array de keywords
+  tags            String   // User tags (comma-separated)
+  
+  // Source e URLs
+  source          String   @default("manual") // scielo, crossref, pubmed, manual
+  pdfUrl          String?
+  
+  // Métricas e sincronização
+  citationsCount  Int?     @default(0)
+  lastSyncedAt    DateTime?
+  
+  // Conteúdo legado (manter compatibilidade)
+  content         String?  // SQLite não precisa de @db.Text
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([doi])
+  @@index([userId, createdAt])
+  @@index([source])
   @@map("saved_references")
 }
 

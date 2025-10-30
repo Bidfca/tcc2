@@ -8,7 +8,7 @@ AgroInsight é uma plataforma abrangente de gestão e análise de dados agropecu
 - **Análise de Dados**: Upload de arquivos CSV com análise estatística automática de dados zootécnicos
 - **Calculadora Zootécnica**: Conversão de unidades e cálculo de índices (@ para kg, taxa de nascimento, etc.)
 - **Resultados e Relatórios**: Visualização de dados com gráficos e exportação em PDF/Excel
-- **Referências Científicas**: Pesquisa integrada no SciELO e Google Acadêmico com biblioteca pessoal
+- **Referências Científicas**: Pesquisa integrada com a **API oficial do SciELO ArticleMeta** e Crossref para busca de artigos acadêmicos com biblioteca pessoal
 
 ### 🔧 Recursos Técnicos
 - **Validação Inteligente**: Identificação automática de colunas zootécnicas e validação de dados
@@ -25,6 +25,9 @@ A aplicação segue uma arquitetura full-stack moderna:
 - **Banco de Dados**: SQLite (desenvolvimento) / PostgreSQL (produção)
 - **Autenticação**: NextAuth.js com autenticação baseada em credenciais
 - **Componentes UI**: Primitivos Radix UI com estilização personalizada
+- **Integrações Externas**: 
+  - SciELO ArticleMeta API para busca de artigos científicos
+  - Crossref API para referências internacionais
 
 ## Como Começar
 
@@ -61,6 +64,61 @@ Após popular o banco de dados, você pode usar estas contas:
 - **Pesquisador**: `researcher@agroinsight.com` / `user123`
 
 ## API Endpoints
+
+### Referencias API
+
+#### POST `/api/referencias/search`
+Busca artigos científicos no SciELO e Crossref.
+
+**Request Body**:
+```json
+{
+  "query": "zootecnia bovinos",
+  "source": "all",
+  "page": 1,
+  "pageSize": 10
+}
+```
+
+**Parâmetros**:
+- `query`: Termo de pesquisa (mínimo 3 caracteres)
+- `source`: Fonte da busca (`all`, `scielo`, `crossref`)
+  - `all`: 60% SciELO + 40% Crossref (padrão)
+  - `scielo`: Apenas artigos do SciELO (API oficial ArticleMeta)
+  - `crossref`: Apenas artigos do Crossref
+- `page`: Página atual (padrão: 1)
+- `pageSize`: Artigos por página (padrão: 10, máximo: 20)
+
+**Response**:
+```json
+{
+  "success": true,
+  "articles": [
+    {
+      "id": "scielo-api-S0034-89102014000200001",
+      "title": "Título do artigo",
+      "authors": ["Silva, J.", "Santos, M."],
+      "abstract": "Resumo do artigo...",
+      "year": 2014,
+      "journal": "Revista Brasileira de Zootecnia",
+      "url": "https://doi.org/10.1590/S0034-89102014000200001",
+      "source": "scielo",
+      "doi": "10.1590/S0034-89102014000200001"
+    }
+  ],
+  "page": 1,
+  "pageSize": 10,
+  "hasMore": true,
+  "total": 10
+}
+```
+
+**Integração SciELO**:
+- Usa a API oficial ArticleMeta (`http://articlemeta.scielo.org/api/v1/`)
+- Suporte a múltiplos idiomas (PT, EN, ES)
+- Metadados completos incluindo DOI, PID, autores e resumos
+- Fallback automático para web scraping se a API falhar
+- Coleções disponíveis: Brasil, Argentina, Chile, Espanha, México, etc.
 
 ### Upload Presets API
 

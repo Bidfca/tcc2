@@ -42,14 +42,15 @@ export async function GET() {
       tokensUsed: completion.usage
     })
 
-  } catch (error: any) {
-    console.error('❌ Erro ao testar OpenAI:', error.message)
+  } catch (error) {
+    const err = error as Error & { type?: string; code?: string }
+    console.error('❌ Erro ao testar OpenAI:', err.message)
     
     return NextResponse.json({
       success: false,
-      error: error.message,
-      type: error.type || 'unknown',
-      code: error.code || 'unknown'
+      error: err.message,
+      type: err.type || 'unknown',
+      code: err.code || 'unknown'
     }, { status: 500 })
   }
 }
