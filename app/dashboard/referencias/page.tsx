@@ -118,7 +118,7 @@ export default function ReferenciasPage() {
 
   const handleLoadMore = async () => {
     setIsLoadingMore(true)
-    setCurrentPage(currentPage + 1)
+    const nextPage = currentPage + 1
     
     try {
       const response = await fetch('/api/referencias/search', {
@@ -129,7 +129,7 @@ export default function ReferenciasPage() {
         body: JSON.stringify({
           query: searchTerm,
           source: selectedSource,
-          page: currentPage + 1,
+          page: nextPage,
           pageSize: 10
         }),
       })
@@ -143,6 +143,7 @@ export default function ReferenciasPage() {
         
         setArticles([...articles, ...articlesWithSavedStatus])
         setHasMore(data.hasMore)
+        setCurrentPage(nextPage) // Atualizar apenas após sucesso
       }
     } catch (error) {
       console.error('Erro ao carregar mais:', error)
@@ -207,7 +208,15 @@ export default function ReferenciasPage() {
     }
   }
 
-  const handleUnsaveArticle = async (articleUrl: string) => {
+  const handleUnsaveArticle = async (articleUrl: string, articleTitle?: string) => {
+    // Confirmação antes de remover
+    const article = savedArticles.find(a => a.url === articleUrl)
+    const title = articleTitle || article?.title || 'este artigo'
+    
+    if (!confirm(`Tem certeza que deseja remover "${title}" da sua biblioteca?\n\nEsta ação não pode ser desfeita.`)) {
+      return
+    }
+
     try {
       const response = await fetch('/api/referencias/unsave', {
         method: 'DELETE',
@@ -400,8 +409,10 @@ export default function ReferenciasPage() {
                         <div className="flex items-center text-sm text-muted-foreground mb-2 space-x-4">
                           <div className="flex items-center">
                             <User className="h-4 w-4 mr-1" />
-                            {article.authors.slice(0, 3).join(', ')}
-                            {article.authors.length > 3 && ` et al.`}
+                            {Array.isArray(article.authors) 
+                              ? article.authors.slice(0, 3).join(', ') 
+                              : article.authors}
+                            {Array.isArray(article.authors) && article.authors.length > 3 && ` et al.`}
                           </div>
                           <div className="flex items-center">
                             <Calendar className="h-4 w-4 mr-1" />
@@ -554,8 +565,10 @@ export default function ReferenciasPage() {
                         <div className="flex items-center text-sm text-muted-foreground mb-2 space-x-4">
                           <div className="flex items-center">
                             <User className="h-4 w-4 mr-1" />
-                            {article.authors.slice(0, 3).join(', ')}
-                            {article.authors.length > 3 && ` et al.`}
+                            {Array.isArray(article.authors) 
+                              ? article.authors.slice(0, 3).join(', ') 
+                              : article.authors}
+                            {Array.isArray(article.authors) && article.authors.length > 3 && ` et al.`}
                           </div>
                           <div className="flex items-center">
                             <Calendar className="h-4 w-4 mr-1" />

@@ -38,9 +38,10 @@ export async function POST(request: NextRequest) {
           abstract: article.abstract,
           year: article.year,
           journal: article.journal,
-          source: article.source
+          source: article.source,
+          doi: article.doi || null
         }),
-        tags: article.authors.join(', ') // Usar autores como tags por enquanto
+        tags: Array.isArray(article.authors) ? article.authors.join(', ') : article.authors
       }
     })
 

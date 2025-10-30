@@ -12,13 +12,15 @@ import {
   ArrowLeft,
   CheckCircle,
   AlertCircle,
-  BarChart3
+  BarChart3,
+  Beaker
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { validateFile, formatBytes, scanFileForThreats } from '@/lib/upload-validation'
 import { toast } from 'sonner'
 import { CSVPreview } from '@/components/csv-preview'
 import Papa from 'papaparse'
+import { generateAndDownloadTestData } from '@/lib/generate-test-data'
 
 export default function AnaliseDataPage() {
   const { data: session, status } = useSession()
@@ -92,6 +94,23 @@ export default function AnaliseDataPage() {
     },
     multiple: false
   })
+
+  const handleGenerateTestData = () => {
+    toast.loading('Gerando dados de teste...')
+    
+    try {
+      // Gera e baixa arquivo CSV com 100 registros
+      generateAndDownloadTestData(100)
+      
+      toast.dismiss()
+      toast.success('Arquivo de teste gerado! Verifique seus downloads.')
+      toast.info('Agora você pode fazer upload do arquivo gerado', { duration: 5000 })
+    } catch (error) {
+      console.error('Erro ao gerar dados:', error)
+      toast.dismiss()
+      toast.error('Erro ao gerar arquivo de teste')
+    }
+  }
 
   const handleAnalyze = async () => {
     if (!uploadedFile) return
@@ -171,7 +190,17 @@ export default function AnaliseDataPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Análise de Dados Zootécnicos</h1>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-bold text-foreground">Análise de Dados Zootécnicos</h1>
+            <button
+              onClick={handleGenerateTestData}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors text-sm font-medium"
+              title="Gera uma planilha CSV com dados fictícios para demonstração"
+            >
+              <Beaker className="h-4 w-4" />
+              <span>Gerar Dados para Teste</span>
+            </button>
+          </div>
           <p className="text-muted-foreground mb-8">
             Faça upload de planilhas CSV com dados zootécnicos para análise estatística automática
           </p>

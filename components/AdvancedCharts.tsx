@@ -336,36 +336,36 @@ export function StatsTable({
 }) {
   return (
     <div>
-      {title && <h4 className="text-lg font-semibold text-gray-900 mb-4">{title}</h4>}
+      {title && <h4 className="text-lg font-semibold text-foreground mb-4">{title}</h4>}
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-border">
+          <thead className="bg-muted">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Variável</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">N</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Média</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mediana</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">DP</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">CV%</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Min</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Max</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Q1</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Q3</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Variável</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">N</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Média</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Mediana</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">DP</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">CV%</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Min</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Max</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Q1</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Q3</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-card divide-y divide-border">
             {Object.entries(stats).map(([variable, stat]) => (
-              <tr key={variable} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm font-medium text-gray-900">{variable}</td>
-                <td className="px-4 py-3 text-sm text-gray-600">{stat.validCount}</td>
-                <td className="px-4 py-3 text-sm text-gray-600">{stat.mean}</td>
-                <td className="px-4 py-3 text-sm text-gray-600">{stat.median}</td>
-                <td className="px-4 py-3 text-sm text-gray-600">{stat.stdDev}</td>
-                <td className="px-4 py-3 text-sm text-gray-600">{stat.cv}%</td>
-                <td className="px-4 py-3 text-sm text-gray-600">{stat.min}</td>
-                <td className="px-4 py-3 text-sm text-gray-600">{stat.max}</td>
-                <td className="px-4 py-3 text-sm text-gray-600">{stat.q1}</td>
-                <td className="px-4 py-3 text-sm text-gray-600">{stat.q3}</td>
+              <tr key={variable} className="hover:bg-muted/50 transition-colors">
+                <td className="px-4 py-3 text-sm font-medium text-foreground">{variable}</td>
+                <td className="px-4 py-3 text-sm text-foreground/80">{stat.validCount}</td>
+                <td className="px-4 py-3 text-sm text-foreground/80">{stat.mean}</td>
+                <td className="px-4 py-3 text-sm text-foreground/80">{stat.median}</td>
+                <td className="px-4 py-3 text-sm text-foreground/80">{stat.stdDev}</td>
+                <td className="px-4 py-3 text-sm text-foreground/80">{stat.cv}%</td>
+                <td className="px-4 py-3 text-sm text-foreground/80">{stat.min}</td>
+                <td className="px-4 py-3 text-sm text-foreground/80">{stat.max}</td>
+                <td className="px-4 py-3 text-sm text-foreground/80">{stat.q1}</td>
+                <td className="px-4 py-3 text-sm text-foreground/80">{stat.q3}</td>
               </tr>
             ))}
           </tbody>

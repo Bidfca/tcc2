@@ -14,7 +14,12 @@ import {
   FileText,
   Printer,
   Activity,
-  Info
+  Info,
+  Table,
+  ScatterChart,
+  Box,
+  GitCompare,
+  Trash2
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import {
@@ -27,6 +32,7 @@ import {
 } from '@/components/AdvancedCharts'
 import { VariableType } from '@/lib/dataAnalysis'
 import { AnalysisLoadingSkeleton } from '@/components/skeleton'
+import { toast } from 'sonner'
 
 const COLORS = ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#6B7280']
 
@@ -74,6 +80,43 @@ export default function ResultadosPage() {
     }
   }
 
+  const handleDeleteAnalysis = async (analysisId: string, analysisName: string) => {
+    // Confirmação antes de deletar
+    if (!confirm(`Tem certeza que deseja deletar a análise "${analysisName}"?\n\nEsta ação não pode ser desfeita.`)) {
+      return
+    }
+
+    const toastId = toast.loading('Deletando análise...')
+
+    try {
+      const response = await fetch(`/api/analise/delete/${analysisId}`, {
+        method: 'DELETE'
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast.success('Análise deletada com sucesso!', { id: toastId })
+        
+        // Remover da lista
+        const updatedAnalyses = analyses.filter(a => a.id !== analysisId)
+        setAnalyses(updatedAnalyses)
+        
+        // Se era a selecionada, selecionar outra
+        if (selectedAnalysis?.id === analysisId) {
+          setSelectedAnalysis(updatedAnalyses[0] || null)
+          setShowDiagnostico(false)
+          setDiagnostico(null)
+        }
+      } else {
+        toast.error(data.error || 'Erro ao deletar análise', { id: toastId })
+      }
+    } catch (error) {
+      console.error('Erro ao deletar análise:', error)
+      toast.error('Erro ao conectar com o servidor', { id: toastId })
+    }
+  }
+
   const handleDownloadCSV = async () => {
     if (!selectedAnalysis) return
     
@@ -102,6 +145,8 @@ export default function ResultadosPage() {
     if (!selectedAnalysis) return
     
     setLoadingDiagnostico(true)
+    const toastId = toast.loading('Gerando diagnóstico...')
+    
     try {
       const response = await fetch(`/api/analise/diagnostico/${selectedAnalysis.id}`)
       const data = await response.json()
@@ -109,12 +154,13 @@ export default function ResultadosPage() {
       if (data.success) {
         setDiagnostico(data.diagnostico)
         setShowDiagnostico(true)
+        toast.success('Diagnóstico gerado com sucesso!', { id: toastId })
       } else {
-        alert('Erro ao gerar diagnóstico')
+        toast.error(data.error || 'Erro ao gerar diagnóstico', { id: toastId })
       }
     } catch (error) {
       console.error('Erro ao gerar diagnóstico:', error)
-      alert('Erro ao gerar diagnóstico. Tente novamente.')
+      toast.error('Erro ao conectar com o servidor', { id: toastId })
     } finally {
       setLoadingDiagnostico(false)
     }
@@ -122,6 +168,142 @@ export default function ResultadosPage() {
 
   const handlePrint = () => {
     window.print()
+  }
+
+  const handlePrintDiagnostico = () => {
+    if (!diagnostico) return
+    
+    const printWindow = window.open('', '', 'height=600,width=800')
+    if (!printWindow) return
+    
+    printWindow.document.write('<html><head><title>Diagnóstico Zootécnico</title>')
+    printWindow.document.write('<style>')
+    printWindow.document.write('body { font-family: Arial, sans-serif; padding: 20px; }')
+    printWindow.document.write('h1 { color: #10B981; }')
+    printWindow.document.write('h2 { color: #374151; margin-top: 20px; }')
+    printWindow.document.write('.section { margin-bottom: 20px; }')
+    printWindow.document.write('.status { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; }')
+    printWindow.document.write('.status-excelente { background: #D1FAE5; color: #065F46; }')
+    printWindow.document.write('.status-bom { background: #DBEAFE; color: #1E40AF; }')
+    printWindow.document.write('.status-regular { background: #FEF3C7; color: #92400E; }')
+    printWindow.document.write('.status-preocupante { background: #FEE2E2; color: #991B1B; }')
+    printWindow.document.write('ul { margin: 10px 0; }')
+    printWindow.document.write('</style>')
+    printWindow.document.write('</head><body>')
+    printWindow.document.write('<h1>Diagnóstico Zootécnico - Análise Especializada</h1>')
+    printWindow.document.write(`<p><strong>Gerado em:</strong> ${new Date().toLocaleString('pt-BR')}</p>`)
+    
+    if (diagnostico.resumoExecutivo) {
+      printWindow.document.write('<div class="section"><h2>Resumo Executivo</h2>')
+      printWindow.document.write(`<p>${diagnostico.resumoExecutivo}</p></div>`)
+    }
+    
+    if (diagnostico.analiseNumericas?.length > 0) {
+      printWindow.document.write('<div class="section"><h2>Análise de Variáveis Numéricas</h2>')
+      diagnostico.analiseNumericas.forEach((analise: any) => {
+        const statusClass = `status-${analise.status?.toLowerCase() || 'regular'}`
+        printWindow.document.write(`<h3>${analise.variavel} <span class="status ${statusClass}">${analise.status}</span></h3>`)
+        printWindow.document.write(`<p>${analise.interpretacao}</p>`)
+        if (analise.comparacaoLiteratura) {
+          printWindow.document.write(`<p><em>${analise.comparacaoLiteratura}</em></p>`)
+        }
+      })
+      printWindow.document.write('</div>')
+    }
+    
+    if (diagnostico.pontosFortes?.length > 0) {
+      printWindow.document.write('<div class="section"><h2>Pontos Fortes</h2><ul>')
+      diagnostico.pontosFortes.forEach((ponto: string) => {
+        printWindow.document.write(`<li>${ponto}</li>`)
+      })
+      printWindow.document.write('</ul></div>')
+    }
+    
+    if (diagnostico.pontosAtencao?.length > 0) {
+      printWindow.document.write('<div class="section"><h2>Pontos de Atenção</h2><ul>')
+      diagnostico.pontosAtencao.forEach((ponto: string) => {
+        printWindow.document.write(`<li>${ponto}</li>`)
+      })
+      printWindow.document.write('</ul></div>')
+    }
+    
+    if (diagnostico.recomendacoesPrioritarias?.length > 0) {
+      printWindow.document.write('<div class="section"><h2>Recomendações Prioritárias</h2>')
+      diagnostico.recomendacoesPrioritarias.forEach((rec: any) => {
+        printWindow.document.write(`<h3>${rec.prioridade}. ${rec.titulo}</h3>`)
+        printWindow.document.write(`<p>${rec.descricao}</p>`)
+        if (rec.justificativa) {
+          printWindow.document.write(`<p><em>Justificativa: ${rec.justificativa}</em></p>`)
+        }
+      })
+      printWindow.document.write('</div>')
+    }
+    
+    if (diagnostico.conclusao) {
+      printWindow.document.write('<div class="section"><h2>Conclusão</h2>')
+      printWindow.document.write(`<p>${diagnostico.conclusao}</p></div>`)
+    }
+    
+    if (diagnostico.fontes?.length > 0) {
+      printWindow.document.write('<div class="section"><h2>Fontes</h2><ul>')
+      diagnostico.fontes.forEach((fonte: string) => {
+        printWindow.document.write(`<li>${fonte}</li>`)
+      })
+      printWindow.document.write('</ul></div>')
+    }
+    
+    printWindow.document.write('</body></html>')
+    printWindow.document.close()
+    printWindow.focus()
+    setTimeout(() => {
+      printWindow.print()
+      printWindow.close()
+    }, 250)
+  }
+
+  // Calcular correlações entre variáveis numéricas
+  const calculateCorrelations = (numericStats: any, rawData: any[]) => {
+    if (!numericStats || !rawData || rawData.length === 0) return []
+    
+    const variables = Object.keys(numericStats)
+    const correlations: Array<{var1: string, var2: string, correlation: number, data: Array<{x: number, y: number}>}> = []
+    
+    for (let i = 0; i < variables.length; i++) {
+      for (let j = i + 1; j < variables.length; j++) {
+        const var1 = variables[i]
+        const var2 = variables[j]
+        
+        // Extrair valores válidos
+        const pairs = rawData.map(row => ({
+          x: parseFloat(row[var1]),
+          y: parseFloat(row[var2])
+        })).filter(p => !isNaN(p.x) && !isNaN(p.y))
+        
+        if (pairs.length < 3) continue
+        
+        // Calcular correlação de Pearson
+        const n = pairs.length
+        const sumX = pairs.reduce((sum, p) => sum + p.x, 0)
+        const sumY = pairs.reduce((sum, p) => sum + p.y, 0)
+        const sumXY = pairs.reduce((sum, p) => sum + p.x * p.y, 0)
+        const sumX2 = pairs.reduce((sum, p) => sum + p.x * p.x, 0)
+        const sumY2 = pairs.reduce((sum, p) => sum + p.y * p.y, 0)
+        
+        const numerator = n * sumXY - sumX * sumY
+        const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY))
+        
+        if (denominator === 0) continue
+        
+        const correlation = numerator / denominator
+        
+        // Apenas correlações significativas (|r| > 0.3)
+        if (Math.abs(correlation) > 0.3) {
+          correlations.push({ var1, var2, correlation, data: pairs })
+        }
+      }
+    }
+    
+    return correlations.sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation))
   }
 
   if (status === 'loading' || loading) {
@@ -264,22 +446,36 @@ export default function ResultadosPage() {
                   <h3 className="text-lg font-medium text-foreground mb-4">Análises Realizadas</h3>
                   <div className="space-y-2">
                     {analyses.map((analysis) => (
-                      <button
+                      <div
                         key={analysis.id}
-                        onClick={() => setSelectedAnalysis(analysis)}
-                        className={`w-full text-left p-3 rounded-md transition-colors ${
+                        className={`relative group rounded-md transition-colors border ${
                           selectedAnalysis?.id === analysis.id
-                            ? 'bg-green-100 border-green-300 border'
-                            : 'hover:bg-background border border'
+                            ? 'bg-green-100 dark:bg-green-950/30 border-green-300 dark:border-green-900'
+                            : 'hover:bg-background border'
                         }`}
                       >
-                        <div className="font-medium text-sm text-foreground truncate">
-                          {analysis.name}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(analysis.createdAt).toLocaleDateString('pt-BR')}
-                        </div>
-                      </button>
+                        <button
+                          onClick={() => setSelectedAnalysis(analysis)}
+                          className="w-full text-left p-3 pr-12"
+                        >
+                          <div className="font-medium text-sm text-foreground truncate">
+                            {analysis.name}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(analysis.createdAt).toLocaleDateString('pt-BR')}
+                          </div>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteAnalysis(analysis.id, analysis.name)
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Deletar análise"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -321,18 +517,28 @@ export default function ResultadosPage() {
 
                     {/* Diagnóstico Zootécnico com IA */}
                     {showDiagnostico && diagnostico && (
-                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg rounded-lg p-6 border-l-4 border-blue-600">
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 shadow-lg rounded-lg p-6 border-l-4 border-blue-600">
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center">
                             <Activity className="h-6 w-6 text-blue-600 mr-2" />
-                            <h3 className="text-xl font-bold text-foreground">Diagnóstico Zootécnico - Análise Especializada por IA</h3>
+                            <h3 className="text-xl font-bold text-foreground">Diagnóstico Zootécnico - Análise Especializada</h3>
                           </div>
-                          <button
-                            onClick={() => setShowDiagnostico(false)}
-                            className="text-muted-foreground hover:text-foreground/80"
-                          >
-                            ✕
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={handlePrintDiagnostico}
+                              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
+                              title="Imprimir/Salvar como PDF"
+                            >
+                              <Printer className="h-4 w-4" />
+                              <span className="hidden sm:inline">PDF</span>
+                            </button>
+                            <button
+                              onClick={() => setShowDiagnostico(false)}
+                              className="text-muted-foreground hover:text-foreground/80 px-2"
+                            >
+                              ✕
+                            </button>
+                          </div>
                         </div>
 
                         {/* Resumo Executivo */}
@@ -589,42 +795,59 @@ export default function ResultadosPage() {
                       </div>
                     )}
 
-                    {/* Gráficos de Dispersão (se houver pelo menos 2 variáveis numéricas) */}
+                    {/* Gráficos de Dispersão - Correlações Significativas */}
                     {analysisData.numericStats && 
                      Object.keys(analysisData.numericStats).length >= 2 && 
-                     analysisData.rawData && (
-                      <div className="bg-card shadow rounded-lg p-6">
-                        <div className="flex items-center mb-6">
-                          <TrendingUp className="h-5 w-5 text-orange-600 mr-2" />
-                          <h3 className="text-lg font-semibold text-foreground">Análise de Correlação (Dispersão)</h3>
-                        </div>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                          {(() => {
-                            const numericVars = Object.keys(analysisData.numericStats)
-                            const pairs: Array<[string, string]> = []
-                            
-                            // Criar pares de variáveis (limitado a 4 gráficos)
-                            for (let i = 0; i < Math.min(2, numericVars.length - 1); i++) {
-                              for (let j = i + 1; j < Math.min(i + 3, numericVars.length); j++) {
-                                if (pairs.length < 4) {
-                                  pairs.push([numericVars[i], numericVars[j]])
-                                }
-                              }
-                            }
-                            
-                            return pairs.map(([xVar, yVar]) => (
-                              <ScatterPlotChart
-                                key={`${xVar}-${yVar}`}
-                                data={analysisData.rawData}
-                                xKey={xVar}
-                                yKey={yVar}
-                                title={`${xVar} vs ${yVar}`}
-                              />
-                            ))
-                          })()}
-                        </div>
-                      </div>
-                    )}
+                     analysisData.rawData && (() => {
+                        const correlations = calculateCorrelations(analysisData.numericStats, analysisData.rawData)
+                        return correlations.length > 0 ? (
+                          <div className="bg-card shadow rounded-lg p-6">
+                            <div className="flex items-center mb-4">
+                              <GitCompare className="h-5 w-5 text-purple-600 mr-2" />
+                              <div>
+                                <h3 className="text-lg font-semibold text-foreground">Análise de Correlações (Scatter Plot)</h3>
+                                <p className="text-sm text-muted-foreground">Apenas correlações significativas (|r| &gt; 0.3)</p>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                              {correlations.slice(0, 6).map((corr, idx) => (
+                                <div key={idx} className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <h4 className="font-medium text-sm text-foreground">
+                                      {corr.var1} vs {corr.var2}
+                                    </h4>
+                                    <span className={`px-2 py-1 text-xs rounded ${
+                                      Math.abs(corr.correlation) > 0.7 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                                      Math.abs(corr.correlation) > 0.5 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
+                                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                    }`}>
+                                      r = {corr.correlation.toFixed(3)}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {Math.abs(corr.correlation) > 0.7 ? '🔴 Correlação forte' :
+                                     Math.abs(corr.correlation) > 0.5 ? '🟠 Correlação moderada' :
+                                     '🟡 Correlação fraca'}
+                                    {corr.correlation > 0 ? ' positiva' : ' negativa'}
+                                  </div>
+                                  <ScatterPlotChart
+                                    data={analysisData.rawData}
+                                    xKey={corr.var1}
+                                    yKey={corr.var2}
+                                    title=""
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            {correlations.length > 6 && (
+                              <div className="mt-4 text-center text-sm text-muted-foreground">
+                                Mostrando as 6 correlações mais fortes de {correlations.length} encontradas
+                              </div>
+                            )}
+                          </div>
+                        ) : null
+                      })()
+                    }
                   </div>
                 ) : (
                   <div className="bg-card shadow rounded-lg p-8 text-center">

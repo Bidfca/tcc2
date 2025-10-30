@@ -12,9 +12,13 @@ import {
   TrendingUp,
   Percent,
   Target,
-  Activity
+  Activity,
+  Heart,
+  Leaf,
+  DollarSign
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { Tabs } from '@/components/tabs'
 
 export default function CalculadoraPage() {
   const { data: session, status } = useSession()
@@ -75,6 +79,37 @@ export default function CalculadoraPage() {
     custoTotal: '',
     pesoArroba: '',
     resultado: ''
+  })
+  
+  // Novas calculadoras econômicas
+  const [analiseCustos, setAnaliseCustos] = useState({
+    custosVariaveis: '',
+    custosFixos: '',
+    maoObraFamiliar: '',
+    resultadoCOE: '',
+    resultadoCOT: '',
+    resultadoCTP: ''
+  })
+  const [margemLucro, setMargemLucro] = useState({
+    receitaBruta: '',
+    coe: '',
+    cot: '',
+    ctp: '',
+    margemBruta: '',
+    margemLiquida: '',
+    lucro: ''
+  })
+  const [pontoEquilibrio, setPontoEquilibrio] = useState({
+    custosFixos: '',
+    precoVenda: '',
+    custoVariavel: '',
+    resultado: ''
+  })
+  const [roi, setRoi] = useState({
+    investimentoTotal: '',
+    lucroAnual: '',
+    resultadoROI: '',
+    resultadoPayback: ''
   })
 
   // Função para converter @ para kg
@@ -195,6 +230,80 @@ export default function CalculadoraPage() {
       setCustoArroba({ ...custoArroba, resultado: custoArrobaCalc.toFixed(2) })
     }
   }
+  
+  // Novas funções econômicas
+  const calcularAnaliseCustos = () => {
+    const cv = parseFloat(analiseCustos.custosVariaveis)
+    const cf = parseFloat(analiseCustos.custosFixos)
+    const mof = parseFloat(analiseCustos.maoObraFamiliar) || 0
+    
+    if (!isNaN(cv) && !isNaN(cf)) {
+      const coe = cv
+      const cot = coe + cf + mof
+      const ctp = cot * 1.06 // Adiciona 6% de custo de oportunidade
+      
+      setAnaliseCustos({
+        ...analiseCustos,
+        resultadoCOE: coe.toFixed(2),
+        resultadoCOT: cot.toFixed(2),
+        resultadoCTP: ctp.toFixed(2)
+      })
+    }
+  }
+  
+  const calcularMargemLucro = () => {
+    const rb = parseFloat(margemLucro.receitaBruta)
+    const coe = parseFloat(margemLucro.coe)
+    const cot = parseFloat(margemLucro.cot)
+    const ctp = parseFloat(margemLucro.ctp)
+    
+    if (!isNaN(rb) && !isNaN(coe) && !isNaN(cot) && !isNaN(ctp)) {
+      const mb = rb - coe
+      const ml = rb - cot
+      const lucro = rb - ctp
+      
+      const mbPercent = ((mb / rb) * 100).toFixed(1)
+      const mlPercent = ((ml / rb) * 100).toFixed(1)
+      const lucroPercent = ((lucro / rb) * 100).toFixed(1)
+      
+      setMargemLucro({
+        ...margemLucro,
+        margemBruta: `R$ ${mb.toFixed(2)} (${mbPercent}%)`,
+        margemLiquida: `R$ ${ml.toFixed(2)} (${mlPercent}%)`,
+        lucro: `R$ ${lucro.toFixed(2)} (${lucroPercent}%)`
+      })
+    }
+  }
+  
+  const calcularPontoEquilibrio = () => {
+    const cf = parseFloat(pontoEquilibrio.custosFixos)
+    const pv = parseFloat(pontoEquilibrio.precoVenda)
+    const cv = parseFloat(pontoEquilibrio.custoVariavel)
+    
+    if (!isNaN(cf) && !isNaN(pv) && !isNaN(cv) && (pv - cv) > 0) {
+      const pe = cf / (pv - cv)
+      setPontoEquilibrio({
+        ...pontoEquilibrio,
+        resultado: pe.toFixed(2)
+      })
+    }
+  }
+  
+  const calcularROI = () => {
+    const invest = parseFloat(roi.investimentoTotal)
+    const lucro = parseFloat(roi.lucroAnual)
+    
+    if (!isNaN(invest) && !isNaN(lucro) && invest > 0) {
+      const roiPercent = ((lucro / invest) * 100).toFixed(2)
+      const payback = lucro > 0 ? (invest / lucro).toFixed(2) : 'N/A'
+      
+      setRoi({
+        ...roi,
+        resultadoROI: `${roiPercent}%`,
+        resultadoPayback: payback !== 'N/A' ? `${payback} anos` : payback
+      })
+    }
+  }
 
   if (status === 'loading') {
     return <div className="min-h-screen bg-background flex items-center justify-center">
@@ -242,7 +351,15 @@ export default function CalculadoraPage() {
             Ferramentas para cálculos essenciais na pecuária e zootecnia
           </p>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Tabs
+            defaultTab="conversoes"
+            tabs={[
+              {
+                id: 'conversoes',
+                label: 'Conversões',
+                icon: <Scale className="h-4 w-4" />,
+                content: (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Conversão @ para kg */}
             <div className="bg-card shadow rounded-lg p-6">
               <div className="flex items-center mb-4">
@@ -314,7 +431,15 @@ export default function CalculadoraPage() {
                 )}
               </div>
             </div>
-
+                  </div>
+                )
+              },
+              {
+                id: 'reproducao',
+                label: 'Reprodução',
+                icon: <Heart className="h-4 w-4" />,
+                content: (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Taxa de Nascimento */}
             <div className="bg-card shadow rounded-lg p-6">
               <div className="flex items-center mb-4">
@@ -414,7 +539,15 @@ export default function CalculadoraPage() {
                 )}
               </div>
             </div>
-
+                  </div>
+                )
+              },
+              {
+                id: 'performance',
+                label: 'Performance',
+                icon: <TrendingUp className="h-4 w-4" />,
+                content: (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Ganho de Peso Diário */}
             <div className="bg-card shadow rounded-lg p-6">
               <div className="flex items-center mb-4">
@@ -575,7 +708,15 @@ export default function CalculadoraPage() {
                 )}
               </div>
             </div>
-
+                  </div>
+                )
+              },
+              {
+                id: 'manejo',
+                label: 'Manejo',
+                icon: <Leaf className="h-4 w-4" />,
+                content: (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Lotação Animal */}
             <div className="bg-card shadow rounded-lg p-6">
               <div className="flex items-center mb-4">
@@ -773,7 +914,15 @@ export default function CalculadoraPage() {
                 )}
               </div>
             </div>
-
+                  </div>
+                )
+              },
+              {
+                id: 'economico',
+                label: 'Econômico',
+                icon: <DollarSign className="h-4 w-4" />,
+                content: (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Custo por Arroba */}
             <div className="bg-card shadow rounded-lg p-6">
               <div className="flex items-center mb-4">
@@ -822,7 +971,296 @@ export default function CalculadoraPage() {
                 )}
               </div>
             </div>
-          </div>
+
+            {/* Análise de Custos (COE, COT, CTP) */}
+            <div className="bg-card shadow rounded-lg p-6">
+              <div className="flex items-center mb-4">
+                <Calculator className="h-6 w-6 text-blue-600 mr-2" />
+                <h2 className="text-xl font-semibold text-foreground">Análise de Custos</h2>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Calcule COE (Custo Operacional Efetivo), COT (Custo Operacional Total) e CTP (Custo Total de Produção)
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    Custos Variáveis - COE (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={analiseCustos.custosVariaveis}
+                    onChange={(e) => setAnaliseCustos({ ...analiseCustos, custosVariaveis: e.target.value })}
+                    className="w-full px-3 py-2 border border rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Alimentação, sanidade, etc"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    Custos Fixos (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={analiseCustos.custosFixos}
+                    onChange={(e) => setAnaliseCustos({ ...analiseCustos, custosFixos: e.target.value })}
+                    className="w-full px-3 py-2 border border rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Arrendamento, depreciação, etc"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    Mão de Obra Familiar (R$) - Opcional
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={analiseCustos.maoObraFamiliar}
+                    onChange={(e) => setAnaliseCustos({ ...analiseCustos, maoObraFamiliar: e.target.value })}
+                    className="w-full px-3 py-2 border border rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Custo de oportunidade"
+                  />
+                </div>
+                <button
+                  onClick={calcularAnaliseCustos}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium"
+                >
+                  Calcular Custos
+                </button>
+                {analiseCustos.resultadoCOE && (
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-md space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">COE:</span>
+                      <span className="text-sm font-bold text-blue-700 dark:text-blue-300">R$ {analiseCustos.resultadoCOE}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">COT:</span>
+                      <span className="text-sm font-bold text-blue-700 dark:text-blue-300">R$ {analiseCustos.resultadoCOT}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">CTP:</span>
+                      <span className="text-sm font-bold text-blue-700 dark:text-blue-300">R$ {analiseCustos.resultadoCTP}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Margem e Lucratividade */}
+            <div className="bg-card shadow rounded-lg p-6">
+              <div className="flex items-center mb-4">
+                <TrendingUp className="h-6 w-6 text-green-600 mr-2" />
+                <h2 className="text-xl font-semibold text-foreground">Margem e Lucratividade</h2>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Calcule margens bruta, líquida e lucro do seu sistema
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    Receita Bruta (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={margemLucro.receitaBruta}
+                    onChange={(e) => setMargemLucro({ ...margemLucro, receitaBruta: e.target.value })}
+                    className="w-full px-3 py-2 border border rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500"
+                    placeholder="Vendas totais"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    COE (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={margemLucro.coe}
+                    onChange={(e) => setMargemLucro({ ...margemLucro, coe: e.target.value })}
+                    className="w-full px-3 py-2 border border rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500"
+                    placeholder="Custo Operacional Efetivo"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    COT (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={margemLucro.cot}
+                    onChange={(e) => setMargemLucro({ ...margemLucro, cot: e.target.value })}
+                    className="w-full px-3 py-2 border border rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500"
+                    placeholder="Custo Operacional Total"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    CTP (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={margemLucro.ctp}
+                    onChange={(e) => setMargemLucro({ ...margemLucro, ctp: e.target.value })}
+                    className="w-full px-3 py-2 border border rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500"
+                    placeholder="Custo Total de Produção"
+                  />
+                </div>
+                <button
+                  onClick={calcularMargemLucro}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium"
+                >
+                  Calcular Margens
+                </button>
+                {margemLucro.margemBruta && (
+                  <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-md space-y-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Margem Bruta</p>
+                      <p className="text-sm font-bold text-green-700 dark:text-green-300">{margemLucro.margemBruta}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Margem Líquida</p>
+                      <p className="text-sm font-bold text-green-700 dark:text-green-300">{margemLucro.margemLiquida}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Lucro</p>
+                      <p className="text-sm font-bold text-green-700 dark:text-green-300">{margemLucro.lucro}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Ponto de Equilíbrio */}
+            <div className="bg-card shadow rounded-lg p-6">
+              <div className="flex items-center mb-4">
+                <Target className="h-6 w-6 text-purple-600 mr-2" />
+                <h2 className="text-xl font-semibold text-foreground">Ponto de Equilíbrio</h2>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Quantas arrobas você precisa vender para empatar?
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    Custos Fixos Totais (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={pontoEquilibrio.custosFixos}
+                    onChange={(e) => setPontoEquilibrio({ ...pontoEquilibrio, custosFixos: e.target.value })}
+                    className="w-full px-3 py-2 border border rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="Ex: 50000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    Preço de Venda por @ (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={pontoEquilibrio.precoVenda}
+                    onChange={(e) => setPontoEquilibrio({ ...pontoEquilibrio, precoVenda: e.target.value })}
+                    className="w-full px-3 py-2 border border rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="Ex: 300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    Custo Variável por @ (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={pontoEquilibrio.custoVariavel}
+                    onChange={(e) => setPontoEquilibrio({ ...pontoEquilibrio, custoVariavel: e.target.value })}
+                    className="w-full px-3 py-2 border border rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="Ex: 200"
+                  />
+                </div>
+                <button
+                  onClick={calcularPontoEquilibrio}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md font-medium"
+                >
+                  Calcular
+                </button>
+                {pontoEquilibrio.resultado && (
+                  <div className="p-4 bg-purple-50 dark:bg-purple-950/30 rounded-md">
+                    <p className="text-sm text-muted-foreground mb-1">Ponto de Equilíbrio:</p>
+                    <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{pontoEquilibrio.resultado} @</p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Você precisa vender esta quantidade de arrobas para cobrir os custos fixos
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ROI e Payback */}
+            <div className="bg-card shadow rounded-lg p-6">
+              <div className="flex items-center mb-4">
+                <Activity className="h-6 w-6 text-red-600 mr-2" />
+                <h2 className="text-xl font-semibold text-foreground">ROI e Payback</h2>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Retorno sobre investimento e tempo de retorno
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    Investimento Total (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={roi.investimentoTotal}
+                    onChange={(e) => setRoi({ ...roi, investimentoTotal: e.target.value })}
+                    className="w-full px-3 py-2 border border rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500"
+                    placeholder="Ex: 500000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">
+                    Lucro Anual (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={roi.lucroAnual}
+                    onChange={(e) => setRoi({ ...roi, lucroAnual: e.target.value })}
+                    className="w-full px-3 py-2 border border rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500"
+                    placeholder="Ex: 80000"
+                  />
+                </div>
+                <button
+                  onClick={calcularROI}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium"
+                >
+                  Calcular ROI
+                </button>
+                {roi.resultadoROI && (
+                  <div className="p-4 bg-red-50 dark:bg-red-950/30 rounded-md space-y-3">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Retorno sobre Investimento (ROI):</p>
+                      <p className="text-2xl font-bold text-red-700 dark:text-red-300">{roi.resultadoROI}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Tempo de Retorno (Payback):</p>
+                      <p className="text-xl font-bold text-red-700 dark:text-red-300">{roi.resultadoPayback}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+                  </div>
+                )
+              }
+            ]}
+          />
 
           {/* Informações Adicionais */}
           <div className="mt-8 bg-card shadow rounded-lg p-6">
