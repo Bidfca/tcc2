@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Papa from 'papaparse'
 import { analyzeDataset } from '@/lib/dataAnalysis'
+import { invalidateCache } from '@/lib/cache'
 
 export async function POST(request: NextRequest) {
   try {
@@ -101,6 +102,11 @@ export async function POST(request: NextRequest) {
         })
       }
     })
+
+    // 🗑️ CACHE: Invalidar cache de resultados do usuário
+    const cacheKey = `resultados:${session.user.id}`
+    await invalidateCache(cacheKey)
+    console.log('🗑️ Cache de resultados invalidado')
 
     return NextResponse.json({
       success: true,

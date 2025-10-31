@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { 
   Sprout, 
@@ -18,6 +18,12 @@ import { ThemeToggle } from '@/components/theme-toggle'
 export default function DashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [stats, setStats] = useState({
+    analysesCount: 0,
+    calculationsCount: 0,
+    savedArticlesCount: 0,
+  })
+  const [loadingStats, setLoadingStats] = useState(true)
 
   useEffect(() => {
     console.log('📊 Dashboard - Status da sessão:', status)
@@ -27,8 +33,27 @@ export default function DashboardPage() {
       router.push('/auth/signin')
     } else if (status === 'authenticated') {
       console.log('✅ Usuário autenticado:', session?.user?.email)
+      fetchStats()
     }
   }, [status, router, session])
+
+  const fetchStats = async () => {
+    try {
+      setLoadingStats(true)
+      const response = await fetch('/api/dashboard/stats')
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          setStats(data.data)
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas:', error)
+    } finally {
+      setLoadingStats(false)
+    }
+  }
 
   if (status === 'loading') {
     return (
@@ -148,7 +173,9 @@ export default function DashboardPage() {
                     <dt className="text-sm font-medium text-foreground/70 truncate">
                       Análises Realizadas
                     </dt>
-                    <dd className="text-lg font-medium text-foreground">0</dd>
+                    <dd className="text-lg font-medium text-foreground">
+                      {loadingStats ? '...' : stats.analysesCount}
+                    </dd>
                   </dl>
                 </div>
               </div>
@@ -166,7 +193,9 @@ export default function DashboardPage() {
                     <dt className="text-sm font-medium text-foreground/70 truncate">
                       Cálculos Realizados
                     </dt>
-                    <dd className="text-lg font-medium text-foreground">0</dd>
+                    <dd className="text-lg font-medium text-foreground">
+                      {loadingStats ? '...' : stats.calculationsCount}
+                    </dd>
                   </dl>
                 </div>
               </div>
@@ -184,7 +213,9 @@ export default function DashboardPage() {
                     <dt className="text-sm font-medium text-foreground/70 truncate">
                       Artigos Salvos
                     </dt>
-                    <dd className="text-lg font-medium text-foreground">0</dd>
+                    <dd className="text-lg font-medium text-foreground">
+                      {loadingStats ? '...' : stats.savedArticlesCount}
+                    </dd>
                   </dl>
                 </div>
               </div>

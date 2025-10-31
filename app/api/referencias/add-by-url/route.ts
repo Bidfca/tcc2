@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import axios from 'axios'
 import * as cheerio from 'cheerio'
+import { invalidateCache } from '@/lib/cache'
 
 // Detectar e extrair DOI de uma URL
 function extractDOI(url: string): string | null {
@@ -329,6 +330,11 @@ export async function POST(request: NextRequest) {
         content: JSON.stringify(metadata) // Manter compatibilidade
       }
     })
+
+    // 🗑️ CACHE: Invalidar cache de artigos salvos do usuário
+    const cacheKey = `articles:saved:${session.user.id}`
+    await invalidateCache(cacheKey)
+    console.log('🗑️ Cache de artigos salvos invalidado')
 
     return NextResponse.json({
       success: true,

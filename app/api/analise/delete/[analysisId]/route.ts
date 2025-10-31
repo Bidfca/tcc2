@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { invalidateCache } from '@/lib/cache'
 
 export async function DELETE(
   request: NextRequest,
@@ -41,6 +42,15 @@ export async function DELETE(
     })
 
     console.log(`✅ Análise ${analysisId} deletada por ${session.user.email}`)
+
+    // 🗑️ CACHE: Invalidar cache de resultados e diagnóstico
+    const resultadosCacheKey = `resultados:${session.user.id}`
+    const diagnosticoCacheKey = `diagnostico:${analysisId}`
+    await Promise.all([
+      invalidateCache(resultadosCacheKey),
+      invalidateCache(diagnosticoCacheKey)
+    ])
+    console.log('🗑️ Cache invalidado: resultados e diagnóstico')
 
     return NextResponse.json({
       success: true,

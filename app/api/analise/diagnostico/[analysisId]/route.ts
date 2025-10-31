@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { gerarDiagnosticoLocal } from '@/lib/diagnostico-local'
+import { getCachedData, setCachedData } from '@/lib/cache'
 
 export async function GET(
   request: NextRequest,
@@ -31,6 +32,23 @@ export async function GET(
       return NextResponse.json({ error: 'Análise não encontrada' }, { status: 404 })
     }
 
+    // 🚀 CACHE: Tentar buscar do cache primeiro
+    const cacheKey = `diagnostico:${analysisId}`
+    const cachedDiagnostico = await getCachedData<any>(cacheKey)
+
+    if (cachedDiagnostico) {
+      console.log('✅ Cache HIT: Diagnóstico encontrado no cache')
+      return NextResponse.json({
+        success: true,
+        diagnostico: cachedDiagnostico.diagnostico,
+        geradoEm: cachedDiagnostico.geradoEm,
+        metodo: cachedDiagnostico.metodo,
+        cached: true
+      })
+    }
+
+    console.log('❌ Cache MISS: Gerando novo diagnóstico')
+
     const data = JSON.parse(analysis.data)
     const metadata = analysis.metadata ? JSON.parse(analysis.metadata) : {}
 
@@ -47,11 +65,21 @@ export async function GET(
 
     console.log('✅ Diagnóstico gerado com sucesso')
 
-    return NextResponse.json({
-      success: true,
+    // Preparar resposta
+    const response = {
       diagnostico,
       geradoEm: new Date().toISOString(),
       metodo: 'Análise baseada em referências zootécnicas (EMBRAPA, NRC)'
+    }
+
+    // 💾 CACHE: Salvar no cache (24 horas = 86400s)
+    await setCachedData(cacheKey, response, 86400)
+    console.log('💾 Diagnóstico salvo no cache')
+
+    return NextResponse.json({
+      success: true,
+      ...response,
+      cached: false
     })
 
   } catch (error) {

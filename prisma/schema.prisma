@@ -11,19 +11,23 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String
-  role      String   @default("USER") // USER or ADMIN
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String?
+  password          String
+  role              String    @default("USER") // USER or ADMIN
+  resetToken        String?   @unique
+  resetTokenExpiry  DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   // Relations
   projects        Project[]
   auditLogs       AuditLog[]
   savedReferences SavedReference[]
 
+  @@index([email])
+  @@index([createdAt])
   @@map("users")
 }
 
@@ -42,6 +46,9 @@ model Project {
   validationSettings  ValidationSetting[]
   projectSettings     ProjectSetting[]
 
+  @@index([ownerId])
+  @@index([createdAt])
+  @@index([ownerId, createdAt])
   @@map("projects")
 }
 
@@ -57,6 +64,7 @@ model ProjectUploadPreset {
   // Relations
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
+  @@index([projectId])
   @@map("project_upload_presets")
 }
 
@@ -76,6 +84,11 @@ model Dataset {
   validations   DataValidation[]
   mappings      DataMapping[]
 
+  @@index([projectId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([projectId, status])
+  @@index([projectId, createdAt])
   @@map("datasets")
 }
 
@@ -91,6 +104,8 @@ model DataMapping {
   // Relations
   dataset Dataset @relation(fields: [datasetId], references: [id], onDelete: Cascade)
 
+  @@index([datasetId])
+  @@index([sourceField])
   @@map("data_mappings")
 }
 
@@ -108,6 +123,9 @@ model DataValidation {
   // Relations
   dataset Dataset @relation(fields: [datasetId], references: [id], onDelete: Cascade)
 
+  @@index([datasetId])
+  @@index([status])
+  @@index([datasetId, status])
   @@map("data_validations")
 }
 
@@ -124,6 +142,8 @@ model ValidationSetting {
   // Relations
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
+  @@index([projectId])
+  @@index([enabled])
   @@map("validation_settings")
 }
 
@@ -205,5 +225,11 @@ model AuditLog {
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([resource, resourceId])
   @@map("audit_logs")
 }

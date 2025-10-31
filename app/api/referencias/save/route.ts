@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { invalidateCache } from '@/lib/cache'
 
 export async function POST(request: NextRequest) {
   try {
@@ -103,6 +104,11 @@ export async function POST(request: NextRequest) {
         content: JSON.stringify(article) // Manter compatibilidade
       }
     })
+
+    // 🗑️ CACHE: Invalidar cache de artigos salvos do usuário
+    const cacheKey = `articles:saved:${session.user.id}`
+    await invalidateCache(cacheKey)
+    console.log('🗑️ Cache invalidado:', cacheKey)
 
     return NextResponse.json({
       success: true,

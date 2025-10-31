@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getCachedData, setCachedData } from '@/lib/cache'
 
 export async function GET() {
   try {
@@ -10,6 +11,21 @@ export async function GET() {
     if (!session?.user) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
+
+    // 🚀 CACHE: Tentar buscar do cache primeiro
+    const cacheKey = `resultados:${session.user.id}`
+    const cachedResults = await getCachedData<any>(cacheKey)
+
+    if (cachedResults) {
+      console.log('✅ Cache HIT: Resultados encontrados no cache')
+      return NextResponse.json({
+        success: true,
+        analyses: cachedResults.analyses,
+        cached: true
+      })
+    }
+
+    console.log('❌ Cache MISS: Buscando resultados do banco')
 
     // Buscar análises pertencentes aos projetos do usuário
     const analyses = await prisma.dataset.findMany({
@@ -33,9 +49,15 @@ export async function GET() {
       }
     })
 
+    // 💾 CACHE: Salvar no cache (5 minutos = 300s)
+    const resultToCache = { analyses }
+    await setCachedData(cacheKey, resultToCache, 300)
+    console.log('💾 Resultados salvos no cache')
+
     return NextResponse.json({
       success: true,
-      analyses
+      analyses,
+      cached: false
     })
 
   } catch (error) {

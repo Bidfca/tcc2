@@ -142,6 +142,15 @@ export default function SignInPage() {
             </div>
           </div>
 
+          <div className="flex items-center justify-end">
+            <Link
+              href="/auth/forgot-password"
+              className="text-sm text-green-600 hover:text-green-500"
+            >
+              Esqueci minha senha
+            </Link>
+          </div>
+
           {error && (
             <div className="text-red-600 text-sm text-center">{error}</div>
           )}

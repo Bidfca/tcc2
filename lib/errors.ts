@@ -11,6 +11,9 @@ export enum ErrorCodes {
   AUTH_008 = 'AUTH-008', // Senha muito fraca
   AUTH_009 = 'AUTH-009', // Erro ao criar usuário
   AUTH_010 = 'AUTH-010', // Erro de redirecionamento
+  AUTH_011 = 'AUTH-011', // Token de reset inválido
+  AUTH_012 = 'AUTH-012', // Token de reset expirado
+  AUTH_013 = 'AUTH-013', // Erro ao enviar email de reset
 
   // Erros de Banco de Dados (DB-001 a DB-099)
   DB_001 = 'DB-001', // Conexão com banco falhou
@@ -98,6 +101,18 @@ export class ErrorHandler {
     [ErrorCodes.AUTH_010]: {
       message: 'Redirect after login failed',
       userMessage: 'Erro ao redirecionar após login. Tente acessar o dashboard diretamente.'
+    },
+    [ErrorCodes.AUTH_011]: {
+      message: 'Invalid reset token',
+      userMessage: 'Link de recuperação inválido. Solicite um novo link.'
+    },
+    [ErrorCodes.AUTH_012]: {
+      message: 'Reset token has expired',
+      userMessage: 'Link de recuperação expirado. Solicite um novo link.'
+    },
+    [ErrorCodes.AUTH_013]: {
+      message: 'Failed to send reset email',
+      userMessage: 'Erro ao enviar email. Tente novamente em alguns minutos.'
     },
 
     // Erros de Banco de Dados
