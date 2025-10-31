@@ -103,56 +103,68 @@ export default function DashboardPage() {
 
         {/* Funcionalidades Principais */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Link href="/dashboard/analise" className="bg-card overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow border">
+          <Link 
+            href="/dashboard/analise" 
+            className="group bg-card overflow-hidden shadow rounded-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-green-500 hover:scale-[1.02] hover:bg-accent/50 cursor-pointer"
+          >
             <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <FileSpreadsheet className="h-8 w-8 text-primary" />
+                  <FileSpreadsheet className="h-8 w-8 text-green-500 group-hover:scale-110 transition-transform" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium text-foreground">Análise de Dados</h3>
+                  <h3 className="text-lg font-medium text-foreground group-hover:text-green-600">Análise de Dados</h3>
                   <p className="text-sm text-foreground/70">Upload e análise de planilhas CSV</p>
                 </div>
               </div>
             </div>
           </Link>
 
-          <Link href="/dashboard/resultados" className="bg-card overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow border">
+          <Link 
+            href="/dashboard/resultados" 
+            className="group bg-card overflow-hidden shadow rounded-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-blue-500 hover:scale-[1.02] hover:bg-accent/50 cursor-pointer"
+          >
             <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <BarChart3 className="h-8 w-8 text-primary" />
+                  <BarChart3 className="h-8 w-8 text-blue-500 group-hover:scale-110 transition-transform" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium text-foreground">Resultados</h3>
+                  <h3 className="text-lg font-medium text-foreground group-hover:text-blue-600">Resultados</h3>
                   <p className="text-sm text-foreground/70">Visualizar e baixar análises</p>
                 </div>
               </div>
             </div>
           </Link>
 
-          <Link href="/dashboard/calculadora" className="bg-card overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow border">
+          <Link 
+            href="/dashboard/calculadora" 
+            className="group bg-card overflow-hidden shadow rounded-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-orange-500 hover:scale-[1.02] hover:bg-accent/50 cursor-pointer"
+          >
             <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <Calculator className="h-8 w-8 text-primary" />
+                  <Calculator className="h-8 w-8 text-orange-500 group-hover:scale-110 transition-transform" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium text-foreground">Calculadora</h3>
+                  <h3 className="text-lg font-medium text-foreground group-hover:text-orange-600">Calculadora</h3>
                   <p className="text-sm text-foreground/70">Índices zootécnicos</p>
                 </div>
               </div>
             </div>
           </Link>
 
-          <Link href="/dashboard/referencias" className="bg-card overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow border">
+          <Link 
+            href="/dashboard/referencias" 
+            className="group bg-card overflow-hidden shadow rounded-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-purple-500 hover:scale-[1.02] hover:bg-accent/50 cursor-pointer"
+          >
             <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <BookOpen className="h-8 w-8 text-primary" />
+                  <BookOpen className="h-8 w-8 text-purple-500 group-hover:scale-110 transition-transform" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium text-foreground">Referências</h3>
+                  <h3 className="text-lg font-medium text-foreground group-hover:text-purple-600">Referências</h3>
                   <p className="text-sm text-foreground/70">Pesquisa de artigos científicos</p>
                 </div>
               </div>
