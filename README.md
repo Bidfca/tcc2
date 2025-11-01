@@ -10,7 +10,7 @@ AgroInsight is a comprehensive livestock data management and analysis platform d
 - **Data Analysis**: CSV file upload with automatic statistical analysis of livestock data
 - **Livestock Calculator**: Unit conversion and index calculations (@ to kg, birth rate, etc.)
 - **Results & Reports**: Data visualization with charts and PDF/Excel export
-- **Scientific References**: Integrated search with **official SciELO ArticleMeta API** and Crossref for academic articles with personal library
+- **Scientific References**: Integrated search with **Google Scholar** (via SerpAPI), PubMed, and Crossref for academic articles with personal library
 
 ### 🔧 Technical Features
 - **Smart Validation**: Automatic identification of livestock columns and data validation
@@ -29,7 +29,8 @@ The application follows a modern full-stack architecture:
 - **Cache**: Upstash Redis for high-performance distributed caching
 - **UI Components**: Radix UI primitives with custom styling
 - **External Integrations**: 
-  - SciELO ArticleMeta API for scientific article search
+  - Google Scholar API (via SerpAPI) for comprehensive academic search
+  - PubMed API for medical and life sciences literature
   - Crossref API for international references
 
 ## Getting Started
@@ -64,6 +65,9 @@ The application follows a modern full-stack architecture:
    # Upstash Redis (Cache) - Required
    UPSTASH_REDIS_REST_URL="https://your-database.upstash.io"
    UPSTASH_REDIS_REST_TOKEN="your-token-here"
+   
+   # SerpAPI (For Google Scholar) - Optional
+   SERPAPI_API_KEY="your-serpapi-key-here"
    ```
    
    **To get Upstash credentials:**
@@ -98,7 +102,7 @@ After seeding the database, you can use these accounts:
 ### References API
 
 #### POST `/api/referencias/search`
-Search for scientific articles on SciELO and Crossref.
+Search for scientific articles on Google Scholar, PubMed, and Crossref.
 
 **Request Body**:
 ```json
@@ -111,11 +115,12 @@ Search for scientific articles on SciELO and Crossref.
 ```
 
 **Parameters**:
-- `query`: Search term (minimum 3 characters)
-- `source`: Search source (`all`, `scielo`, `crossref`)
-  - `all`: 60% SciELO + 40% Crossref (default)
-  - `scielo`: SciELO articles only (official ArticleMeta API)
-  - `crossref`: Crossref articles only
+- `query`: Search term (minimum 2 characters)
+- `source`: Search source (`all`, `scholar`, `pubmed`, `crossref`)
+  - `all`: All sources combined (default)
+  - `scholar`: Google Scholar only (requires SerpAPI key)
+  - `pubmed`: PubMed only
+  - `crossref`: Crossref only
 - `page`: Current page (default: 1)
 - `pageSize`: Articles per page (default: 10, maximum: 20)
 
@@ -125,15 +130,17 @@ Search for scientific articles on SciELO and Crossref.
   "success": true,
   "articles": [
     {
-      "id": "scielo-api-S0034-89102014000200001",
+      "id": "scholar-abc123",
       "title": "Article title",
       "authors": ["Silva, J.", "Santos, M."],
       "abstract": "Article abstract...",
       "year": 2014,
-      "journal": "Revista Brasileira de Zootecnia",
-      "url": "https://doi.org/10.1590/S0034-89102014000200001",
-      "source": "scielo",
-      "doi": "10.1590/S0034-89102014000200001"
+      "journal": "Journal of Agricultural Science",
+      "url": "https://doi.org/10.1234/example",
+      "source": "scholar",
+      "doi": "10.1234/example",
+      "citationsCount": 45,
+      "pdfUrl": "https://example.com/paper.pdf"
     }
   ],
   "page": 1,
@@ -143,12 +150,26 @@ Search for scientific articles on SciELO and Crossref.
 }
 ```
 
-**SciELO Integration**:
-- Uses the official ArticleMeta API (`http://articlemeta.scielo.org/api/v1/`)
-- Multi-language support (PT, EN, ES)
-- Complete metadata including DOI, PID, authors, and abstracts
-- Automatic fallback to web scraping if API fails
-- Available collections: Brazil, Argentina, Chile, Spain, Mexico, etc.
+**Provider Details**:
+
+**Google Scholar** (via SerpAPI):
+- Broad academic database coverage
+- Citation count tracking
+- PDF availability detection
+- Free tier: 100 searches/month
+- Sign up at: https://serpapi.com/
+
+**PubMed**:
+- Medical and life sciences focus
+- MeSH terms support
+- Free API access
+- No API key required
+
+**Crossref**:
+- DOI registry with comprehensive metadata
+- International journal coverage
+- Free API access
+- No API key required
 
 ### Upload Presets API
 

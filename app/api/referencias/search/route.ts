@@ -4,7 +4,7 @@
  * Endpoint: POST /api/referencias/search
  * 
  * This route now uses the enhanced ReferenceSearchService which:
- * - Searches real scientific articles from SciELO and PubMed
+ * - Searches real scientific articles from Google Scholar, PubMed, and Crossref
  * - Validates articles from trusted sources
  * - Deduplicates results across providers
  * - Ranks articles by relevance
@@ -14,7 +14,7 @@
  * ```json
  * {
  *   "query": "leite",
- *   "source": "all" | "scielo" | "pubmed",
+ *   "source": "all" | "scholar" | "pubmed" | "crossref",
  *   "page": 1,
  *   "pageSize": 10,
  *   "yearFrom": 2020,

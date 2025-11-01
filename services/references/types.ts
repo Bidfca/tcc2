@@ -17,7 +17,7 @@ export interface Article {
   year: number
   journal: string
   url: string
-  source: 'scielo' | 'crossref' | 'pubmed' | 'scholar' | 'embrapa' | 'manual'
+  source: 'crossref' | 'pubmed' | 'scholar' | 'embrapa' | 'manual'
   
   // Additional identifiers
   doi?: string
@@ -87,7 +87,7 @@ export interface SearchOptions {
   hasFullText?: boolean
   
   // Source selection
-  sources?: Array<'scielo' | 'crossref' | 'pubmed' | 'scholar' | 'embrapa'>
+  sources?: Array<'crossref' | 'pubmed' | 'scholar' | 'embrapa'>
 }
 
 /**

@@ -274,7 +274,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="ml-4">
                   <h4 className="text-sm font-medium text-foreground">Pesquise artigos científicos</h4>
-                  <p className="text-sm text-foreground/70">Encontre referências no SciELO e Google Acadêmico para suas pesquisas</p>
+                  <p className="text-sm text-foreground/70">Encontre referências no Google Scholar, PubMed e Crossref para suas pesquisas</p>
                 </div>
               </div>
             </div>

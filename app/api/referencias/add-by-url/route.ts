@@ -13,107 +13,9 @@ function extractDOI(url: string): string | null {
   return match ? match[0] : null
 }
 
-// Detectar se é URL do SciELO
-function isSciELOUrl(url: string): boolean {
-  const scieloPatterns = [
-    /scielo\.br/i,
-    /scielo\.org/i,
-    /scielo\.(cl|ar|mx|co|pe|ve|cu)/i
-  ]
-  return scieloPatterns.some(pattern => pattern.test(url))
-}
+// SciELO detection removed - no longer supported
 
-// Extrair metadados de página SciELO via scraping
-async function getMetadataFromSciELO(url: string) {
-  try {
-    const response = await axios.get(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      },
-      timeout: 15000
-    })
-    
-    const $ = cheerio.load(response.data)
-    
-    // Título
-    const title = $('h1.article-title').text().trim() ||
-                  $('meta[name="citation_title"]').attr('content') ||
-                  'Título não disponível'
-    
-    // Autores
-    const authors: string[] = []
-    $('meta[name="citation_author"]').each((_, el) => {
-      const name = $(el).attr('content')
-      if (name) authors.push(name)
-    })
-    
-    // Abstract
-    const abstract = $('.abstract p').text().trim() ||
-                     $('meta[name="citation_abstract"]').attr('content') ||
-                     'Resumo não disponível'
-    
-    // DOI
-    const doi = $('meta[name="citation_doi"]').attr('content')
-    
-    // Journal
-    const journal = $('meta[name="citation_journal_title"]').attr('content') || 'Revista Científica'
-    
-    // ISSN
-    const issn = $('meta[name="citation_issn"]').attr('content')
-    
-    // Ano e data
-    const yearStr = $('meta[name="citation_publication_date"]').attr('content') ||
-                    $('meta[name="citation_year"]').attr('content')
-    const year = yearStr ? parseInt(yearStr.split('/')[0]) : new Date().getFullYear()
-    const publishedDate = yearStr ? yearStr : undefined
-    
-    // Volume e Issue
-    const volume = $('meta[name="citation_volume"]').attr('content')
-    const issue = $('meta[name="citation_issue"]').attr('content')
-    
-    // Páginas
-    const firstPage = $('meta[name="citation_firstpage"]').attr('content')
-    const lastPage = $('meta[name="citation_lastpage"]').attr('content')
-    const pages = firstPage && lastPage ? `${firstPage}-${lastPage}` : undefined
-    
-    // PDF URL
-    const pdfUrl = $('meta[name="citation_pdf_url"]').attr('content') ||
-                   $('a.pdf-link').attr('href')
-    
-    // Keywords
-    const keywords: string[] = []
-    $('.keyword').each((_, el) => {
-      const keyword = $(el).text().trim()
-      if (keyword) keywords.push(keyword)
-    })
-    
-    // Idioma
-    const language = $('html').attr('lang')?.split('-')[0] || 'pt'
-    
-    return {
-      title,
-      authors: authors.length > 0 ? authors : ['Autor não especificado'],
-      abstract: abstract.substring(0, 500),
-      year,
-      publishedDate,
-      journal,
-      issn,
-      volume,
-      issue,
-      pages,
-      url,
-      doi,
-      pdfUrl,
-      keywords,
-      language,
-      citationsCount: 0,
-      source: 'scielo'
-    }
-  } catch (error) {
-    console.error('Erro ao extrair metadados do SciELO:', error)
-    return null
-  }
-}
+// SciELO scraping removed - no longer supported
 
 // Buscar metadata de um DOI via Crossref
 async function getMetadataFromDOI(doi: string) {
@@ -232,19 +134,13 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Detectar tipo de URL
-    const isScielo = isSciELOUrl(url)
+    // Detect DOI from URL
     const doi = extractDOI(url)
     
     let metadata = null
     
-    // Prioridade 1: Se for SciELO, extrair diretamente da página
-    if (isScielo) {
-      metadata = await getMetadataFromSciELO(url)
-    }
-    
-    // Prioridade 2: Se houver DOI e não for SciELO, buscar via Crossref
-    if (!metadata && doi) {
+    // If DOI is found, fetch metadata from Crossref
+    if (doi) {
       metadata = await getMetadataFromDOI(doi)
     }
     

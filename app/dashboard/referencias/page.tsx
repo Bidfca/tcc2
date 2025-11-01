@@ -32,7 +32,7 @@ interface Article {
   year: number
   journal: string
   url: string
-  source: 'scielo' | 'crossref'
+  source: 'scholar' | 'pubmed' | 'crossref'
   saved?: boolean
   doi?: string
   // Campos expandidos
@@ -56,7 +56,7 @@ export default function ReferenciasPage() {
   const [articles, setArticles] = useState<Article[]>([])
   const [savedArticles, setSavedArticles] = useState<Article[]>([])
   const [activeTab, setActiveTab] = useState<'search' | 'saved'>('search')
-  const [selectedSource, setSelectedSource] = useState<'all' | 'scielo' | 'crossref'>('all')
+  const [selectedSource, setSelectedSource] = useState<'all' | 'scielo' | 'pubmed' | 'crossref'>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
@@ -294,7 +294,7 @@ export default function ReferenciasPage() {
         <div className="px-4 py-6 sm:px-0">
           <h1 className="text-3xl font-bold text-foreground mb-2">Referências Científicas</h1>
           <p className="text-muted-foreground mb-8">
-            Pesquise artigos científicos no SciELO e Google Acadêmico para suas pesquisas
+            Pesquise artigos científicos no Google Scholar, PubMed e Crossref para suas pesquisas
           </p>
 
           {/* Tabs */}
@@ -356,7 +356,8 @@ export default function ReferenciasPage() {
                       className="w-full px-3 py-2 border border rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500"
                     >
                       <option value="all">Todas as fontes</option>
-                      <option value="scielo">SciELO</option>
+                      <option value="scholar">Google Scholar</option>
+                      <option value="pubmed">PubMed</option>
                       <option value="crossref">Crossref</option>
                     </select>
                   </div>
@@ -400,11 +401,13 @@ export default function ReferenciasPage() {
                           </h4>
                           <div className="flex items-center space-x-2">
                             <span className={`px-2 py-1 text-xs rounded-full ${
-                              article.source === 'scielo' 
+                              article.source === 'scholar' 
                                 ? 'bg-blue-100 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300' 
-                                : 'bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-300'
+                                : article.source === 'pubmed'
+                                ? 'bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-300'
+                                : 'bg-orange-100 dark:bg-orange-950/50 text-orange-800 dark:text-orange-300'
                             }`}>
-                              {article.source === 'scielo' ? 'SciELO' : 'Crossref'}
+                              {article.source === 'scholar' ? 'Google Scholar' : article.source === 'pubmed' ? 'PubMed' : 'Crossref'}
                             </span>
                             <button
                               onClick={() => article.saved ? handleUnsaveArticle(article.url) : handleSaveArticle(article)}
@@ -593,11 +596,13 @@ export default function ReferenciasPage() {
                           </h4>
                           <div className="flex items-center space-x-2">
                             <span className={`px-2 py-1 text-xs rounded-full ${
-                              article.source === 'scielo' 
+                              article.source === 'scholar' 
                                 ? 'bg-blue-100 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300' 
-                                : 'bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-300'
+                                : article.source === 'pubmed'
+                                ? 'bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-300'
+                                : 'bg-orange-100 dark:bg-orange-950/50 text-orange-800 dark:text-orange-300'
                             }`}>
-                              {article.source === 'scielo' ? 'SciELO' : 'Crossref'}
+                              {article.source === 'scholar' ? 'Google Scholar' : article.source === 'pubmed' ? 'PubMed' : 'Crossref'}
                             </span>
                             <button
                               onClick={() => handleUnsaveArticle(article.url)}

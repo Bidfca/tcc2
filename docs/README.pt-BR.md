@@ -10,7 +10,7 @@ AgroInsight é uma plataforma abrangente de gestão e análise de dados zootécn
 - **Análise de Dados**: Upload de arquivos CSV com análise estatística automática de dados zootécnicos
 - **Calculadora Zootécnica**: Conversão de unidades e cálculo de índices (@ para kg, taxa de nascimento, etc.)
 - **Resultados e Relatórios**: Visualização de dados com gráficos e exportação em PDF/Excel
-- **Referências Científicas**: Pesquisa integrada com a **API oficial do SciELO ArticleMeta** e Crossref para busca de artigos acadêmicos com biblioteca pessoal
+- **Referências Científicas**: Pesquisa integrada com **Google Scholar** (via SerpAPI), PubMed e Crossref para busca de artigos acadêmicos com biblioteca pessoal
 
 ### 🔧 Recursos Técnicos
 - **Validação Inteligente**: Identificação automática de colunas zootécnicas e validação de dados
@@ -29,7 +29,8 @@ A aplicação segue uma arquitetura full-stack moderna:
 - **Cache**: Upstash Redis para cache distribuído de alto desempenho
 - **Componentes UI**: Primitivos Radix UI com estilização personalizada
 - **Integrações Externas**: 
-  - SciELO ArticleMeta API para busca de artigos científicos
+  - Google Scholar API (via SerpAPI) para busca acadêmica abrangente
+  - PubMed API para literatura médica e ciências da vida
   - Crossref API para referências internacionais
 
 ## Como Começar
@@ -64,6 +65,9 @@ A aplicação segue uma arquitetura full-stack moderna:
    # Upstash Redis (Cache) - Obrigatório
    UPSTASH_REDIS_REST_URL="https://seu-banco.upstash.io"
    UPSTASH_REDIS_REST_TOKEN="seu-token-aqui"
+   
+   # SerpAPI (Para Google Scholar) - Opcional
+   SERPAPI_API_KEY="sua-chave-serpapi-aqui"
    ```
    
    **Para obter credenciais do Upstash:**
@@ -98,7 +102,7 @@ Após popular o banco de dados, você pode usar estas contas:
 ### API de Referências
 
 #### POST `/api/referencias/search`
-Busca artigos científicos no SciELO e Crossref.
+Busca artigos científicos no Google Scholar, PubMed e Crossref.
 
 **Corpo da Requisição**:
 ```json
@@ -111,11 +115,12 @@ Busca artigos científicos no SciELO e Crossref.
 ```
 
 **Parâmetros**:
-- `query`: Termo de pesquisa (mínimo 3 caracteres)
-- `source`: Fonte da busca (`all`, `scielo`, `crossref`)
-  - `all`: 60% SciELO + 40% Crossref (padrão)
-  - `scielo`: Apenas artigos do SciELO (API oficial ArticleMeta)
-  - `crossref`: Apenas artigos do Crossref
+- `query`: Termo de pesquisa (mínimo 2 caracteres)
+- `source`: Fonte da busca (`all`, `scholar`, `pubmed`, `crossref`)
+  - `all`: Todas as fontes combinadas (padrão)
+  - `scholar`: Apenas Google Scholar (requer chave SerpAPI)
+  - `pubmed`: Apenas PubMed
+  - `crossref`: Apenas Crossref
 - `page`: Página atual (padrão: 1)
 - `pageSize`: Artigos por página (padrão: 10, máximo: 20)
 
@@ -125,15 +130,17 @@ Busca artigos científicos no SciELO e Crossref.
   "success": true,
   "articles": [
     {
-      "id": "scielo-api-S0034-89102014000200001",
+      "id": "scholar-abc123",
       "title": "Título do artigo",
       "authors": ["Silva, J.", "Santos, M."],
       "abstract": "Resumo do artigo...",
       "year": 2014,
-      "journal": "Revista Brasileira de Zootecnia",
-      "url": "https://doi.org/10.1590/S0034-89102014000200001",
-      "source": "scielo",
-      "doi": "10.1590/S0034-89102014000200001"
+      "journal": "Revista de Ciências Agrárias",
+      "url": "https://doi.org/10.1234/exemplo",
+      "source": "scholar",
+      "doi": "10.1234/exemplo",
+      "citationsCount": 45,
+      "pdfUrl": "https://exemplo.com/artigo.pdf"
     }
   ],
   "page": 1,
@@ -143,12 +150,26 @@ Busca artigos científicos no SciELO e Crossref.
 }
 ```
 
-**Integração SciELO**:
-- Usa a API oficial ArticleMeta (`http://articlemeta.scielo.org/api/v1/`)
-- Suporte a múltiplos idiomas (PT, EN, ES)
-- Metadados completos incluindo DOI, PID, autores e resumos
-- Fallback automático para web scraping se a API falhar
-- Coleções disponíveis: Brasil, Argentina, Chile, Espanha, México, etc.
+**Detalhes dos Provedores**:
+
+**Google Scholar** (via SerpAPI):
+- Cobertura abrangente de bases acadêmicas
+- Rastreamento de contagem de citações
+- Detecção de disponibilidade de PDF
+- Plano gratuito: 100 pesquisas/mês
+- Cadastre-se em: https://serpapi.com/
+
+**PubMed**:
+- Foco em medicina e ciências da vida
+- Suporte a termos MeSH
+- Acesso gratuito à API
+- Não requer chave API
+
+**Crossref**:
+- Registro DOI com metadados abrangentes
+- Cobertura de periódicos internacionais
+- Acesso gratuito à API
+- Não requer chave API
 
 ### API de Upload Presets
 

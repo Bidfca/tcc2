@@ -6,8 +6,9 @@
  */
 
 import { Article, SearchOptions, SearchResult, SearchProvider } from './types'
-import SciELOProvider from './providers/scielo.provider'
 import PubMedProvider from './providers/pubmed.provider'
+import CrossrefProvider from './providers/crossref.provider'
+import GoogleScholarProvider from './providers/scholar.provider'
 import { getCachedData, setCachedData } from '@/lib/cache'
 
 export class ReferenceSearchService {
@@ -17,14 +18,12 @@ export class ReferenceSearchService {
   constructor() {
     // Initialize all available providers
     this.providers = new Map<string, SearchProvider>()
-    this.providers.set('scielo', new SciELOProvider())
     this.providers.set('pubmed', new PubMedProvider())
-    // Add more providers as they are implemented
-    // this.providers.set('crossref', new CrossrefProvider())
-    // this.providers.set('scholar', new GoogleScholarProvider())
+    this.providers.set('crossref', new CrossrefProvider())
+    this.providers.set('scholar', new GoogleScholarProvider())
     
     // Default enabled providers
-    this.enabledProviders = ['scielo', 'pubmed']
+    this.enabledProviders = ['pubmed', 'crossref', 'scholar']
   }
   
   /**
