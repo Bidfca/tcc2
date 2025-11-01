@@ -1,121 +1,123 @@
-# AgroInsight - Plataforma de Gestão de Dados Zootécnicos
+# AgroInsight - Livestock Data Management Platform
 
-AgroInsight é uma plataforma abrangente de gestão e análise de dados agropecuários desenvolvida para pesquisadores, produtores rurais e zootecnistas. Construída com tecnologias web modernas, oferece validação inteligente de dados, conversão automática de unidades e fluxos de trabalho colaborativos.
+**[English](README.md)** | **[Português (Brasil)](README.pt-BR.md)**
 
-## Funcionalidades
+AgroInsight is a comprehensive livestock data management and analysis platform designed for researchers, farmers, and animal scientists. Built with modern web technologies, it offers intelligent data validation, automatic unit conversion, and collaborative workflows.
 
-### 🌱 Funcionalidades Principais
-- **Análise de Dados**: Upload de arquivos CSV com análise estatística automática de dados zootécnicos
-- **Calculadora Zootécnica**: Conversão de unidades e cálculo de índices (@ para kg, taxa de nascimento, etc.)
-- **Resultados e Relatórios**: Visualização de dados com gráficos e exportação em PDF/Excel
-- **Referências Científicas**: Pesquisa integrada com a **API oficial do SciELO ArticleMeta** e Crossref para busca de artigos acadêmicos com biblioteca pessoal
+## Features
 
-### 🔧 Recursos Técnicos
-- **Validação Inteligente**: Identificação automática de colunas zootécnicas e validação de dados
-- **Log de Auditoria**: Rastreamento completo de todas as modificações de dados
-- **Controle de Acesso**: Papéis de Usuário e Administrador com permissões apropriadas
-- **API RESTful**: API completa para integração com ferramentas externas
+### 🌱 Core Features
+- **Data Analysis**: CSV file upload with automatic statistical analysis of livestock data
+- **Livestock Calculator**: Unit conversion and index calculations (@ to kg, birth rate, etc.)
+- **Results & Reports**: Data visualization with charts and PDF/Excel export
+- **Scientific References**: Integrated search with **official SciELO ArticleMeta API** and Crossref for academic articles with personal library
 
-## Arquitetura
+### 🔧 Technical Features
+- **Smart Validation**: Automatic identification of livestock columns and data validation
+- **Audit Log**: Complete tracking of all data modifications
+- **Access Control**: User and Admin roles with appropriate permissions
+- **RESTful API**: Complete API for integration with external tools
 
-A aplicação segue uma arquitetura full-stack moderna:
+## Architecture
 
-- **Frontend**: Next.js 14 com React, TypeScript e TailwindCSS
-- **Backend**: Rotas de API Next.js com Prisma ORM
-- **Banco de Dados**: SQLite (desenvolvimento) / PostgreSQL (produção)
-- **Autenticação**: NextAuth.js com autenticação baseada em credenciais
-- **Cache**: Upstash Redis para cache distribuído de alto desempenho
-- **Componentes UI**: Primitivos Radix UI com estilização personalizada
-- **Integrações Externas**: 
-  - SciELO ArticleMeta API para busca de artigos científicos
-  - Crossref API para referências internacionais
+The application follows a modern full-stack architecture:
 
-## Como Começar
+- **Frontend**: Next.js 14 with React, TypeScript, and TailwindCSS
+- **Backend**: Next.js API routes with Prisma ORM
+- **Database**: SQLite (development) / PostgreSQL (production)
+- **Authentication**: NextAuth.js with credentials-based authentication
+- **Cache**: Upstash Redis for high-performance distributed caching
+- **UI Components**: Radix UI primitives with custom styling
+- **External Integrations**: 
+  - SciELO ArticleMeta API for scientific article search
+  - Crossref API for international references
 
-### Pré-requisitos
+## Getting Started
+
+### Prerequisites
 - Node.js 18+ 
-- npm ou yarn
+- npm or yarn
 
-### Instalação
+### Installation
 
-1. **Instalar dependências**:
+1. **Install dependencies**:
    ```bash
    npm install
    ```
 
-2. **Configurar variáveis de ambiente**:
+2. **Configure environment variables**:
    
-   Crie um arquivo `.env.local` na raiz do projeto (copie de `.env.example`):
+   Create a `.env.local` file in the project root (copy from `.env.example`):
    ```bash
    cp .env.example .env.local
    ```
    
-   Configure as seguintes variáveis:
+   Configure the following variables:
    ```env
-   # Banco de dados
+   # Database
    DATABASE_URL="file:./dev.db"
    
    # NextAuth
    NEXTAUTH_URL="http://localhost:3000"
-   NEXTAUTH_SECRET="seu-secret-aqui"
+   NEXTAUTH_SECRET="your-secret-here"
    
-   # Upstash Redis (Cache) - Obrigatório
-   UPSTASH_REDIS_REST_URL="https://seu-banco.upstash.io"
-   UPSTASH_REDIS_REST_TOKEN="seu-token-aqui"
+   # Upstash Redis (Cache) - Required
+   UPSTASH_REDIS_REST_URL="https://your-database.upstash.io"
+   UPSTASH_REDIS_REST_TOKEN="your-token-here"
    ```
    
-   **Para obter credenciais do Upstash:**
-   - Crie uma conta gratuita em [upstash.com](https://upstash.com)
-   - Crie um novo banco Redis
-   - Copie a URL e o token da aba "REST API"
-   - Plano gratuito: 10.000 comandos/dia (suficiente para desenvolvimento)
+   **To get Upstash credentials:**
+   - Create a free account at [upstash.com](https://upstash.com)
+   - Create a new Redis database
+   - Copy the URL and token from the "REST API" tab
+   - Free tier: 10,000 commands/day (sufficient for development)
 
-3. **Configurar o banco de dados**:
+3. **Set up the database**:
    ```bash
    npm run db:generate
    npm run db:push
    npm run db:seed
    ```
 
-4. **Iniciar o servidor de desenvolvimento**:
+4. **Start the development server**:
    ```bash
    npm run dev
    ```
 
-5. **Abrir o navegador** e navegar para `http://localhost:3000`
+5. **Open your browser** and navigate to `http://localhost:3000`
 
-### Contas Padrão
+### Default Accounts
 
-Após popular o banco de dados, você pode usar estas contas:
+After seeding the database, you can use these accounts:
 
 - **Admin**: `admin@agroinsight.com` / `admin123`
-- **Pesquisador**: `researcher@agroinsight.com` / `user123`
+- **Researcher**: `researcher@agroinsight.com` / `user123`
 
 ## API Endpoints
 
-### Referencias API
+### References API
 
 #### POST `/api/referencias/search`
-Busca artigos científicos no SciELO e Crossref.
+Search for scientific articles on SciELO and Crossref.
 
 **Request Body**:
 ```json
 {
-  "query": "zootecnia bovinos",
+  "query": "livestock cattle",
   "source": "all",
   "page": 1,
   "pageSize": 10
 }
 ```
 
-**Parâmetros**:
-- `query`: Termo de pesquisa (mínimo 3 caracteres)
-- `source`: Fonte da busca (`all`, `scielo`, `crossref`)
-  - `all`: 60% SciELO + 40% Crossref (padrão)
-  - `scielo`: Apenas artigos do SciELO (API oficial ArticleMeta)
-  - `crossref`: Apenas artigos do Crossref
-- `page`: Página atual (padrão: 1)
-- `pageSize`: Artigos por página (padrão: 10, máximo: 20)
+**Parameters**:
+- `query`: Search term (minimum 3 characters)
+- `source`: Search source (`all`, `scielo`, `crossref`)
+  - `all`: 60% SciELO + 40% Crossref (default)
+  - `scielo`: SciELO articles only (official ArticleMeta API)
+  - `crossref`: Crossref articles only
+- `page`: Current page (default: 1)
+- `pageSize`: Articles per page (default: 10, maximum: 20)
 
 **Response**:
 ```json
@@ -124,9 +126,9 @@ Busca artigos científicos no SciELO e Crossref.
   "articles": [
     {
       "id": "scielo-api-S0034-89102014000200001",
-      "title": "Título do artigo",
+      "title": "Article title",
       "authors": ["Silva, J.", "Santos, M."],
-      "abstract": "Resumo do artigo...",
+      "abstract": "Article abstract...",
       "year": 2014,
       "journal": "Revista Brasileira de Zootecnia",
       "url": "https://doi.org/10.1590/S0034-89102014000200001",
@@ -141,12 +143,12 @@ Busca artigos científicos no SciELO e Crossref.
 }
 ```
 
-**Integração SciELO**:
-- Usa a API oficial ArticleMeta (`http://articlemeta.scielo.org/api/v1/`)
-- Suporte a múltiplos idiomas (PT, EN, ES)
-- Metadados completos incluindo DOI, PID, autores e resumos
-- Fallback automático para web scraping se a API falhar
-- Coleções disponíveis: Brasil, Argentina, Chile, Espanha, México, etc.
+**SciELO Integration**:
+- Uses the official ArticleMeta API (`http://articlemeta.scielo.org/api/v1/`)
+- Multi-language support (PT, EN, ES)
+- Complete metadata including DOI, PID, authors, and abstracts
+- Automatic fallback to web scraping if API fails
+- Available collections: Brazil, Argentina, Chile, Spain, Mexico, etc.
 
 ### Upload Presets API
 
@@ -223,54 +225,54 @@ The application uses the following main entities:
 └── types/                # TypeScript type definitions
 ```
 
-## 🚀 Sistema de Cache
+## 🚀 Cache System
 
-O AgroInsight utiliza **Upstash Redis** para cache distribuído de alto desempenho. O cache é implementado nos seguintes endpoints:
+AgroInsight uses **Upstash Redis** for high-performance distributed caching. Cache is implemented in the following endpoints:
 
-- **Diagnósticos** (24h TTL) - Reduz tempo de 10-30s → 50ms
-- **Busca de artigos** (1h TTL) - Reduz tempo de 3-5s → 100ms  
-- **Listagem de resultados** (5min TTL) - Reduz carga no banco
-- **Artigos salvos** (10min TTL) - Melhora experiência do usuário
+- **Diagnostics** (24h TTL) - Reduces time from 10-30s → 50ms
+- **Article search** (1h TTL) - Reduces time from 3-5s → 100ms  
+- **Results listing** (5min TTL) - Reduces database load
+- **Saved articles** (10min TTL) - Improves user experience
 
-**Benefícios:**
-- ⚡ Redução de 95%+ no tempo de resposta
-- 💰 Economia em chamadas de API externas
-- 🌐 Escalabilidade para múltiplos usuários
+**Benefits:**
+- ⚡ 95%+ reduction in response time
+- 💰 Savings on external API calls
+- 🌐 Scalability for multiple users
 
-Para detalhes completos, consulte: [`docs/CACHE_SYSTEM.md`](docs/CACHE_SYSTEM.md)
+For complete details, see: [`docs/CACHE_SYSTEM.md`](docs/CACHE_SYSTEM.md)
 
-## 🛡️ Sistema de Segurança e Middlewares
+## 🛡️ Security and Middleware System
 
-O AgroInsight implementa um sistema robusto de segurança:
+AgroInsight implements a robust security system:
 
-### Componentes
-- **Logger Condicional** - Logs estruturados apenas em desenvolvimento
-- **Auth Middleware** - Autenticação reutilizável e type-safe
-- **Rate Limiting** - Proteção contra abuso (Upstash Ratelimit)
-- **Validação de Arquivos** - Validação robusta de uploads
+### Components
+- **Conditional Logger** - Structured logs only in development
+- **Auth Middleware** - Reusable and type-safe authentication
+- **Rate Limiting** - Protection against abuse (Upstash Ratelimit)
+- **File Validation** - Robust upload validation
 
-### Limites de Rate Limiting
-| Endpoint | Limite | Janela |
+### Rate Limiting Rules
+| Endpoint | Limit | Window |
 |----------|--------|--------|
-| Upload | 5 req | 1 hora |
-| Diagnóstico | 20 req | 1 hora |
-| Busca | 100 req | 1 hora |
+| Upload | 5 req | 1 hour |
+| Diagnostics | 20 req | 1 hour |
+| Search | 100 req | 1 hour |
 | Auth | 5 req | 15 min |
 
-### Validação de Arquivos
-- CSV: Até 50 MB
-- PDF: Até 10 MB
-- Imagens: Até 5 MB
+### File Validation
+- CSV: Up to 50 MB
+- PDF: Up to 10 MB
+- Images: Up to 5 MB
 
-Para detalhes completos, consulte: [`docs/MIDDLEWARE_SYSTEM.md`](docs/MIDDLEWARE_SYSTEM.md)
+For complete details, see: [`docs/MIDDLEWARE_SYSTEM.md`](docs/MIDDLEWARE_SYSTEM.md)
 
-## 📚 Documentação Adicional
+## 📚 Additional Documentation
 
-- **[API Reference](docs/API_REFERENCE.md)** - Documentação completa de todos os endpoints
-- **[Cache System](docs/CACHE_SYSTEM.md)** - Sistema de cache com Upstash Redis
-- **[Middleware System](docs/MIDDLEWARE_SYSTEM.md)** - Segurança, logger e rate limiting
-- **[Documentação Técnica](docs/DOCUMENTACAO_TECNICA.md)** - Arquitetura e detalhes técnicos
-- **[Guia de Uso Rápido](docs/GUIA_USO_RAPIDO.md)** - Tutorial para usuários finais
+- **[API Reference](docs/API_REFERENCE.md)** - Complete documentation of all endpoints
+- **[Cache System](docs/CACHE_SYSTEM.md)** - Cache system with Upstash Redis
+- **[Middleware System](docs/MIDDLEWARE_SYSTEM.md)** - Security, logger, and rate limiting
+- **[Technical Documentation](docs/DOCUMENTACAO_TECNICA.md)** - Architecture and technical details
+- **[Quick Start Guide](docs/GUIA_USO_RAPIDO.md)** - Tutorial for end users
 
 ## Contributing
 
