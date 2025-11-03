@@ -28,13 +28,13 @@ function randomChoice<T>(array: T[]): T {
 }
 
 // Função para gerar data aleatória
-function randomDate(start: Date, end: Date): string {
-  const date = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
-  return date.toISOString().split('T')[0]
-}
+// function randomDate(start: Date, end: Date): string {
+//   const date = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
+//   return date.toISOString().split('T')[0]
+// }
 
 // Adicionar missing values de forma aleatória
-function possiblyNull(value: any, probability: number = 0.05): any {
+function possiblyNull<T>(value: T, probability: number = 0.05): T | '' {
   return Math.random() < probability ? '' : value
 }
 
@@ -46,9 +46,9 @@ export function generateTestData(config: TestDataConfig = {
   includeNumeric: true,
   includeCategorical: true,
   includeMissing: false
-}): any[] {
+}): Record<string, unknown>[] {
   
-  const data: any[] = []
+  const data: Record<string, unknown>[] = []
   const missingProb = config.includeMissing ? 0.05 : 0
 
   for (let i = 1; i <= config.rows; i++) {
@@ -86,7 +86,7 @@ export function generateTestData(config: TestDataConfig = {
     const ca = randomBetween(6, 10, 2)
     const rendimentoCarcaca = randomBetween(48, 56, 1)
     
-    const row: any = {
+    const row: Record<string, unknown> = {
       ID: `A${String(i).padStart(5, '0')}`,
       ANIMAL: `BOV${String(i).padStart(4, '0')}`
     }
@@ -122,7 +122,7 @@ export function generateTestData(config: TestDataConfig = {
 /**
  * Converte array de objetos para CSV
  */
-export function convertToCSV(data: any[]): string {
+export function convertToCSV(data: Record<string, unknown>[]): string {
   if (data.length === 0) return ''
 
   // Headers

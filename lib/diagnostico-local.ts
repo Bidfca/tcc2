@@ -86,11 +86,11 @@ function identificarTipoVariavel(nome: string): keyof typeof REFERENCIAS | null 
   return null
 }
 
-function avaliarStatus(valor: number, ref: any): {
+function avaliarStatus(valor: number, ref: { min: number; ideal_min?: number; ideal_max?: number; max: number; fonte: string }): {
   status: 'Excelente' | 'Bom' | 'Regular' | 'Preocupante',
   interpretacao: string
 } {
-  if ('ideal_min' in ref) {
+  if (ref.ideal_min !== undefined && ref.ideal_max !== undefined) {
     if (valor >= ref.ideal_min && valor <= ref.ideal_max) {
       return { status: 'Excelente', interpretacao: `Valor dentro da faixa ideal (${ref.ideal_min}-${ref.ideal_max}).` }
     }
@@ -98,7 +98,7 @@ function avaliarStatus(valor: number, ref: any): {
       return { status: 'Bom', interpretacao: `Valor aceitável, mas abaixo do ideal (${ref.ideal_min}-${ref.ideal_max}).` }
     }
     if (valor > ref.ideal_max && valor <= ref.max) {
-      return { status: 'Bom', interpretacao: `Valor aceitável, mas acima do ideal (${ref.ideal_min}-${ref.ideal_max}).` }
+      return { status: 'Regular', interpretacao: `Valor acima do ideal, mas ainda aceitável (${ref.ideal_min}-${ref.ideal_max}).` }
     }
     if (valor < ref.min || valor > ref.max) {
       return { status: 'Preocupante', interpretacao: `Valor fora dos limites aceitáveis (${ref.min}-${ref.max}).` }
@@ -109,7 +109,7 @@ function avaliarStatus(valor: number, ref: any): {
 
 export function gerarDiagnosticoLocal(
   numericStats: Record<string, NumericStats>,
-  categoricalStats: any,
+  categoricalStats: Record<string, unknown>,
   datasetName: string,
   totalRows: number
 ): DiagnosticoLocal {
@@ -130,9 +130,9 @@ export function gerarDiagnosticoLocal(
     let interpretacao = ''
     let comparacao = ''
 
-    if (tipoVar && tipoVar in REFERENCIAS) {
+    if (tipoVar && tipoVar in REFERENCIAS && tipoVar !== 'cv_aceitavel') {
       const ref = REFERENCIAS[tipoVar]
-      const avaliacao = avaliarStatus(mean, ref)
+      const avaliacao = avaliarStatus(mean, ref as { min: number; ideal_min?: number; ideal_max?: number; max: number; fonte: string })
       status = avaliacao.status
       interpretacao = `Média de ${stats.mean}: ${avaliacao.interpretacao}`
       comparacao = `Referência: ${ref.fonte}`
@@ -176,7 +176,7 @@ export function gerarDiagnosticoLocal(
   const analiseCategoricas = []
   if (categoricalStats) {
     for (const [varName, stats] of Object.entries(categoricalStats)) {
-      const s = stats as any
+      const s = stats as { uniqueValues?: number; mode?: string }
       analiseCategoricas.push({
         variavel: varName,
         interpretacao: `Identificadas ${s.uniqueValues || 0} categorias distintas.`,

@@ -95,7 +95,7 @@ export interface AppError {
   code: ErrorCodes          // Unique error code for identification
   message: string           // Technical message for developers/logs
   userMessage: string       // User-friendly message for UI display
-  details?: any             // Additional context-specific details
+  details?: unknown             // Additional context-specific details
   timestamp: string         // ISO timestamp when error occurred
   context?: string          // Where the error occurred (function name, etc.)
 }
@@ -292,7 +292,7 @@ export class ErrorHandler {
    */
   static createError(
     code: ErrorCodes,
-    details?: any,
+    details?: unknown,
     context?: string
   ): AppError {
     // Look up the predefined messages for this error code

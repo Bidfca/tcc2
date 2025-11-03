@@ -56,7 +56,7 @@ export default function ReferenciasPage() {
   const [articles, setArticles] = useState<Article[]>([])
   const [savedArticles, setSavedArticles] = useState<Article[]>([])
   const [activeTab, setActiveTab] = useState<'search' | 'saved'>('search')
-  const [selectedSource, setSelectedSource] = useState<'all' | 'scielo' | 'pubmed' | 'crossref'>('all')
+  const [selectedSource, setSelectedSource] = useState<'all' | 'scholar' | 'pubmed' | 'crossref'>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
@@ -352,7 +352,7 @@ export default function ReferenciasPage() {
                     </label>
                     <select
                       value={selectedSource}
-                      onChange={(e) => setSelectedSource(e.target.value as any)}
+                      onChange={(e) => setSelectedSource(e.target.value as 'all' | 'scholar' | 'pubmed' | 'crossref')}
                       className="w-full px-3 py-2 border border rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500"
                     >
                       <option value="all">Todas as fontes</option>

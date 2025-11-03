@@ -13,14 +13,12 @@
 import React, { useMemo } from 'react'
 import {
   ResponsiveContainer,
-  ScatterChart,
   Scatter,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
-  ReferenceLine,
   Line,
   ComposedChart
 } from 'recharts'
@@ -51,8 +49,7 @@ export const ScatterPlot: React.FC<ScatterPlotProps> = ({
   yLabel = 'Y',
   showRegression = true,
   showCorrelation = true,
-  height = 400,
-  color = '#3b82f6'
+  height = 400
 }) => {
   // Calculate statistics
   const stats = useMemo(() => {

@@ -112,7 +112,7 @@ export function validateFile(file: File): ValidationResult {
 /**
  * Valida o conteúdo do CSV após parse
  */
-export function validateCSVContent(data: any[]): ValidationResult {
+export function validateCSVContent(data: Record<string, unknown>[]): ValidationResult {
   if (!data || data.length === 0) {
     return {
       valid: false,

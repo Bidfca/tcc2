@@ -180,7 +180,7 @@ export async function applyRateLimit(
  * Higher-order function para proteger rotas com rate limiting
  * Uso: export const POST = withRateLimit('upload', async (request, { user }) => { ... })
  */
-export function withRateLimit<T = any>(
+export function withRateLimit<T = Record<string, string>>(
   type: RateLimitType,
   handler: (
     request: Request,
@@ -250,7 +250,7 @@ export async function getRateLimitInfo(
     }
 
     // Parsear dados do rate limit
-    return data as any
+    return data as { limit: number; remaining: number; reset: number }
   } catch (error) {
     logger.error('Erro ao obter informações de rate limit', error)
     return null

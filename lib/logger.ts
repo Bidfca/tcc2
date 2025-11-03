@@ -50,7 +50,7 @@ class Logger {
    * @param data - Optional additional data to log
    * @param options - Optional formatting options
    */
-  private log(level: LogLevel, message: string, data?: any, options?: LogOptions) {
+  private log(level: LogLevel, message: string, data?: unknown, options?: LogOptions) {
     // In production, only log errors to avoid noise
     // All other levels are silenced
     if (!this.isDevelopment && level !== 'error') {
@@ -99,35 +99,35 @@ class Logger {
   /**
    * Log informational message
    */
-  info(message: string, data?: any, options?: LogOptions) {
+  info(message: string, data?: unknown, options?: LogOptions) {
     this.log('info', message, data, options)
   }
 
   /**
    * Log warning message
    */
-  warn(message: string, data?: any, options?: LogOptions) {
+  warn(message: string, data?: unknown, options?: LogOptions) {
     this.log('warn', message, data, options)
   }
 
   /**
    * Log error message (always shown, even in production)
    */
-  error(message: string, error?: any, options?: LogOptions) {
+  error(message: string, error?: unknown, options?: LogOptions) {
     this.log('error', message, error, options)
   }
 
   /**
    * Log debug message (only in development)
    */
-  debug(message: string, data?: any, options?: LogOptions) {
+  debug(message: string, data?: unknown, options?: LogOptions) {
     this.log('debug', message, data, options)
   }
 
   /**
    * Log success message
    */
-  success(message: string, data?: any, options?: LogOptions) {
+  success(message: string, data?: unknown, options?: LogOptions) {
     this.log('success', message, data, options)
   }
 
@@ -156,7 +156,7 @@ class Logger {
       this.success(`${method} ${path} - ${status}${duration ? ` (${duration}ms)` : ''}`),
     
     // Log API error
-    error: (method: string, path: string, error: any) => 
+    error: (method: string, path: string, error: unknown) => 
       this.error(`${method} ${path} falhou`, error)
   }
 
@@ -170,7 +170,7 @@ class Logger {
       this.debug(`DB ${operation} em ${table}`, undefined, { emoji: '🗄️' }),
     
     // Log database error
-    error: (operation: string, error: any) => 
+    error: (operation: string, error: unknown) => 
       this.error(`DB ${operation} falhou`, error)
   }
 

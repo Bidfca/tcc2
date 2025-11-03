@@ -34,7 +34,11 @@ export async function GET(
 
     // 🚀 CACHE: Tentar buscar do cache primeiro
     const cacheKey = `diagnostico:${analysisId}`
-    const cachedDiagnostico = await getCachedData<any>(cacheKey)
+    const cachedDiagnostico = await getCachedData<{
+      diagnostico: string;
+      geradoEm: string;
+      metodo: string;
+    }>(cacheKey)
 
     if (cachedDiagnostico) {
       console.log('✅ Cache HIT: Diagnóstico encontrado no cache')

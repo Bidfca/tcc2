@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     const useStreaming = fileSizeInMB > 10 // Use streaming for files > 10MB
     
     let data: Record<string, unknown>[] = []
-    let parseErrors: any[] = []
+    let parseErrors: Papa.ParseError[] = []
     
     if (useStreaming) {
       // STREAMING MODE: Process CSV in chunks for large files
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
         header: true,
         skipEmptyLines: true,
         transformHeader: (header) => header.trim(),
-        step: (row: any) => {
+        step: (row: Papa.ParseStepResult<Record<string, unknown>>) => {
           if (row.errors.length === 0) {
             currentChunk.push(row.data)
             

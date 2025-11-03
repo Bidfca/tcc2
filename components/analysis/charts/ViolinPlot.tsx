@@ -130,10 +130,10 @@ export const ViolinPlot: React.FC<ViolinPlotProps> = ({
     const points = 100
     const step = (maxY - minY) / (points - 1)
     
-    const result: any[] = []
+    const result: Array<Record<string, number>> = []
     for (let i = 0; i < points; i++) {
       const y = minY + i * step
-      const point: any = { y }
+      const point: Record<string, number> = { y }
       
       processedData.forEach((group, index) => {
         // Find closest KDE point
@@ -268,7 +268,7 @@ export const ViolinPlot: React.FC<ViolinPlotProps> = ({
       
       <div className="mt-4 text-sm text-muted-foreground">
         <p>
-          <strong className="text-foreground">Violin Plot:</strong> A largura de cada "violino" representa a densidade dos dados naquela região. 
+          <strong className="text-foreground">Violin Plot:</strong> A largura de cada &quot;violino&quot; representa a densidade dos dados naquela região. 
           Regiões mais largas indicam onde há mais observações. A linha preta central marca a mediana.
         </p>
       </div>

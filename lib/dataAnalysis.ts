@@ -103,7 +103,7 @@ const ZOOTECHNICAL_KEYWORDS = {
  */
 export function detectVariableType(
   columnName: string,
-  values: any[]
+  values: unknown[]
 ): VariableInfo {
   const cleanValues = values.filter(v => v !== null && v !== undefined && v !== '')
   const columnNameLower = columnName.toLowerCase()
@@ -115,7 +115,7 @@ export function detectVariableType(
   
   // Detectar tipo bruto
   let numericCount = 0
-  let stringCount = 0
+  // let stringCount = 0
   let dateCount = 0
   
   const numericValues: number[] = []
@@ -127,9 +127,9 @@ export function detectVariableType(
       numericValues.push(numValue)
     } else if (isDateString(String(value))) {
       dateCount++
-    } else {
-      stringCount++
-    }
+    } // else {
+      // stringCount++
+    // }
   })
   
   const total = cleanValues.length
@@ -195,7 +195,7 @@ export function detectVariableType(
 /**
  * Calcula estatísticas descritivas para variáveis numéricas
  */
-export function calculateNumericStats(values: any[]): NumericStats {
+export function calculateNumericStats(values: unknown[]): NumericStats {
   const numericValues = values
     .map(v => {
       if (typeof v === 'number') return v
@@ -279,7 +279,7 @@ export function calculateNumericStats(values: any[]): NumericStats {
 /**
  * Calcula estatísticas para variáveis categóricas
  */
-export function calculateCategoricalStats(values: any[]): CategoricalStats {
+export function calculateCategoricalStats(values: unknown[]): CategoricalStats {
   const cleanValues = values
     .map(v => String(v).trim())
     .filter(v => v !== '' && v !== 'null' && v !== 'undefined')
@@ -328,7 +328,7 @@ export function calculateCategoricalStats(values: any[]): CategoricalStats {
 /**
  * Analisa dataset completo
  */
-export function analyzeDataset(data: Record<string, any>[]) {
+export function analyzeDataset(data: Record<string, unknown>[]) {
   if (data.length === 0) {
     throw new Error('Dataset vazio')
   }

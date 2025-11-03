@@ -3,8 +3,6 @@
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
   ScatterChart,
   Scatter,
   PieChart,
@@ -17,7 +15,7 @@ import {
   Legend,
   ResponsiveContainer,
   ComposedChart,
-  Area
+  Line
 } from 'recharts'
 import { NumericStats, CategoricalStats } from '@/lib/dataAnalysis'
 
@@ -124,7 +122,7 @@ export function PieChartComponent({
   
   const others = Object.entries(data.distribution)
     .slice(maxSlices)
-    .reduce((sum, [_, count]) => sum + count, 0)
+    .reduce((sum, [, count]) => sum + count, 0)
   
   const chartData = sortedData.map(([name, value]) => ({ name, value }))
   
@@ -168,15 +166,15 @@ export function ScatterPlotChart({
   yKey,
   title
 }: { 
-  data: any[]
+  data: Record<string, unknown>[]
   xKey: string
   yKey: string
   title?: string
 }) {
   const scatterData = data
     .map(row => ({
-      x: parseFloat(row[xKey]),
-      y: parseFloat(row[yKey])
+      x: parseFloat(row[xKey] as string),
+      y: parseFloat(row[yKey] as string)
     }))
     .filter(point => !isNaN(point.x) && !isNaN(point.y))
 

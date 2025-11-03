@@ -3,11 +3,11 @@
 import { Table } from 'lucide-react'
 
 interface CSVPreviewProps {
-  data: any[]
+  data: Record<string, unknown>[]
   filename: string
 }
 
-export function CSVPreview({ data, filename }: CSVPreviewProps) {
+export function CSVPreview({ data }: CSVPreviewProps) {
   if (!data || data.length === 0) {
     return null
   }

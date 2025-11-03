@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import axios from 'axios'
-import * as cheerio from 'cheerio'
 import { invalidateCache } from '@/lib/cache'
 
 // Detectar e extrair DOI de uma URL

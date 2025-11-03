@@ -16,7 +16,12 @@ import {
 
 export default function DebugPage() {
   const { data: session, status } = useSession()
-  const [testResults, setTestResults] = useState<any[]>([])
+  const [testResults, setTestResults] = useState<Array<{
+    test: string;
+    status: string;
+    message: string;
+    details: unknown;
+  }>>([])
   const [isRunning, setIsRunning] = useState(false)
 
   const runTests = async () => {
@@ -238,7 +243,7 @@ export default function DebugPage() {
                         {result.message}
                       </span>
                     </div>
-                    {result.details && (
+                    {result.details !== undefined && result.details !== null && (
                       <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-x-auto">
                         {JSON.stringify(result.details, null, 2)}
                       </pre>

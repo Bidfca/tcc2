@@ -7,7 +7,7 @@
 
 import React from 'react'
 import { BoxPlot, calculateBoxPlotStats, ScatterPlot, Heatmap, ViolinPlot } from './index'
-import { independentTTest, pearsonCorrelation, oneWayANOVA } from '@/lib/statistics'
+import { independentTTest, oneWayANOVA } from '@/lib/statistics'
 
 // ============================================================================
 // EXAMPLE 1: Box Plot - Compare weight distributions across breeds

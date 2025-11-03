@@ -26,10 +26,20 @@ export default function AnaliseDataPage() {
   const router = useRouter()
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [analysisResult, setAnalysisResult] = useState<any>(null)
+  const [analysisResult, setAnalysisResult] = useState<{
+    id?: string;
+    name?: string;
+    data?: string;
+    totalRows?: number;
+    totalColumns?: number;
+    validRows?: number;
+    success?: boolean;
+    analysis?: { id: string; name: string; data: string };
+    message?: string;
+  } | null>(null)
   const [error, setError] = useState('')
   const [warning, setWarning] = useState('')
-  const [previewData, setPreviewData] = useState<any[]>([])
+  const [previewData, setPreviewData] = useState<Record<string, unknown>[]>([])
   const [isParsing, setIsParsing] = useState(false)
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -75,7 +85,7 @@ export default function AnaliseDataPage() {
       skipEmptyLines: true,
       preview: 100, // Apenas primeiras 100 linhas para preview
       complete: (results) => {
-        setPreviewData(results.data)
+        setPreviewData(results.data as Record<string, unknown>[])
         setIsParsing(false)
       },
       error: (error) => {

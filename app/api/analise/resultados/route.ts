@@ -14,7 +14,17 @@ export async function GET() {
 
     // 🚀 CACHE: Tentar buscar do cache primeiro
     const cacheKey = `resultados:${session.user.id}`
-    const cachedResults = await getCachedData<any>(cacheKey)
+    const cachedResults = await getCachedData<{
+      analyses: Array<{
+        id: string;
+        name: string;
+        filename: string;
+        data: string;
+        metadata: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+      }>;
+    }>(cacheKey)
 
     if (cachedResults) {
       console.log('✅ Cache HIT: Resultados encontrados no cache')

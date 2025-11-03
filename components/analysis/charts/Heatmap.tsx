@@ -41,7 +41,7 @@ function calculateCorrelationMatrix(data: Record<string, number[]>): HeatmapData
         try {
           const result = pearsonCorrelation(data[variables[i]], data[variables[j]])
           matrix[i][j] = result.coefficient
-        } catch (error) {
+        } catch {
           matrix[i][j] = 0
         }
       }
@@ -76,7 +76,6 @@ function getTextColor(value: number): string {
 export const Heatmap: React.FC<HeatmapProps> = ({
   data,
   title,
-  height = 500,
   showValues = true
 }) => {
   const heatmapData = useMemo(() => calculateCorrelationMatrix(data), [data])

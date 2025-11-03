@@ -56,7 +56,7 @@ export interface AuthResponse {
  * }
  * ```
  */
-export async function requireAuth(request?: NextRequest): Promise<AuthResponse> {
+export async function requireAuth(): Promise<AuthResponse> {
   try {
     // Retrieve the current session from NextAuth
     // This works in both API routes and server components
@@ -113,7 +113,7 @@ export async function requireAuth(request?: NextRequest): Promise<AuthResponse> 
  * })
  * ```
  */
-export function withAuth<T = any>(
+export function withAuth<T = Record<string, string>>(
   handler: (
     request: NextRequest,
     context: { user: NonNullable<AuthResponse['user']>; params?: T }
@@ -122,7 +122,7 @@ export function withAuth<T = any>(
   // Return an async function that Next.js will call
   return async (request: NextRequest, context?: { params?: T }) => {
     // Check authentication first
-    const auth = await requireAuth(request)
+    const auth = await requireAuth()
     
     // If not authenticated, return 401 immediately
     if (!auth.authenticated || !auth.user) {

@@ -14,7 +14,22 @@ export async function GET() {
 
     // 🚀 CACHE: Tentar buscar do cache primeiro
     const cacheKey = `articles:saved:${session.user.id}`
-    const cachedArticles = await getCachedData<any>(cacheKey)
+    const cachedArticles = await getCachedData<{
+      articles: Array<{
+        id: string;
+        title: string;
+        authors: string[];
+        year: number;
+        abstract: string;
+        journal: string;
+        doi: string | null;
+        url: string | null;
+        keywords: string[];
+        source: string;
+        savedAt: string;
+      }>;
+      total: number;
+    }>(cacheKey)
 
     if (cachedArticles) {
       console.log('✅ Cache HIT: Artigos salvos encontrados no cache')

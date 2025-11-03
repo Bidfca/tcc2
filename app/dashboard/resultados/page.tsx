@@ -10,14 +10,10 @@ import {
   Download,
   BarChart3,
   PieChart,
-  TrendingUp,
   FileText,
   Printer,
   Activity,
   Info,
-  Table,
-  ScatterChart,
-  Box,
   GitCompare,
   Trash2
 } from 'lucide-react'
@@ -30,11 +26,11 @@ import {
   StatsTable,
   StatCard
 } from '@/components/AdvancedCharts'
-import { VariableType } from '@/lib/dataAnalysis'
+import { VariableType, VariableInfo, NumericStats, CategoricalStats } from '@/lib/dataAnalysis'
 import { AnalysisLoadingSkeleton } from '@/components/skeleton'
 import { toast } from 'sonner'
 
-const COLORS = ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#6B7280']
+// const COLORS = ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#6B7280']
 
 // Função auxiliar para obter label do tipo de variável
 function getVariableTypeLabel(type: VariableType): string {
@@ -49,13 +45,62 @@ function getVariableTypeLabel(type: VariableType): string {
   return labels[type] || type
 }
 
+// Type definition for analysis data
+interface AnalysisData {
+  variablesInfo?: Record<string, VariableInfo>;
+  numericStats?: Record<string, NumericStats>;
+  categoricalStats?: Record<string, CategoricalStats>;
+  rawData?: Record<string, unknown>[];
+  statistics?: Record<string, NumericStats>; // Legacy format
+  categoricalAnalysis?: Record<string, CategoricalStats>; // Legacy format
+  zootechnicalVariables?: string[];
+  totalRows?: number;
+  totalColumns?: number;
+}
+
 export default function ResultadosPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [analyses, setAnalyses] = useState<any[]>([])
-  const [selectedAnalysis, setSelectedAnalysis] = useState<any>(null)
+  const [analyses, setAnalyses] = useState<Array<{
+    id: string;
+    name: string;
+    filename: string;
+    data: string;
+    metadata: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }>>([])
+  const [selectedAnalysis, setSelectedAnalysis] = useState<{
+    id: string;
+    name: string;
+    filename: string;
+    data: string;
+    metadata: string | null;
+    createdAt: string;
+    updatedAt: string;
+  } | null>(null)
   const [loading, setLoading] = useState(true)
-  const [diagnostico, setDiagnostico] = useState<any>(null)
+  const [diagnostico, setDiagnostico] = useState<{
+    diagnostico: string;
+    geradoEm: string;
+    metodo: string;
+    resumoExecutivo?: string;
+    analiseNumericas?: Array<{
+      variavel: string;
+      status: string;
+      interpretacao: string;
+      comparacaoLiteratura?: string;
+    }>;
+    pontosFortes?: string[];
+    pontosAtencao?: string[];
+    recomendacoesPrioritarias?: Array<{
+      titulo: string;
+      descricao: string;
+      prioridade: string;
+    }>;
+    conclusao?: string;
+    fontes?: string[];
+  } | null>(null)
   const [loadingDiagnostico, setLoadingDiagnostico] = useState(false)
   const [showDiagnostico, setShowDiagnostico] = useState(false)
 
@@ -166,9 +211,9 @@ export default function ResultadosPage() {
     }
   }
 
-  const handlePrint = () => {
-    window.print()
-  }
+  // const handlePrint = () => {
+  //   window.print()
+  // }
 
   const handlePrintDiagnostico = () => {
     if (!diagnostico) return
@@ -198,9 +243,14 @@ export default function ResultadosPage() {
       printWindow.document.write(`<p>${diagnostico.resumoExecutivo}</p></div>`)
     }
     
-    if (diagnostico.analiseNumericas?.length > 0) {
+    if (diagnostico.analiseNumericas && diagnostico.analiseNumericas.length > 0) {
       printWindow.document.write('<div class="section"><h2>Análise de Variáveis Numéricas</h2>')
-      diagnostico.analiseNumericas.forEach((analise: any) => {
+      diagnostico.analiseNumericas.forEach((analise: {
+        variavel: string;
+        status: string;
+        interpretacao: string;
+        comparacaoLiteratura?: string;
+      }) => {
         const statusClass = `status-${analise.status?.toLowerCase() || 'regular'}`
         printWindow.document.write(`<h3>${analise.variavel} <span class="status ${statusClass}">${analise.status}</span></h3>`)
         printWindow.document.write(`<p>${analise.interpretacao}</p>`)
@@ -211,7 +261,7 @@ export default function ResultadosPage() {
       printWindow.document.write('</div>')
     }
     
-    if (diagnostico.pontosFortes?.length > 0) {
+    if (diagnostico.pontosFortes && diagnostico.pontosFortes.length > 0) {
       printWindow.document.write('<div class="section"><h2>Pontos Fortes</h2><ul>')
       diagnostico.pontosFortes.forEach((ponto: string) => {
         printWindow.document.write(`<li>${ponto}</li>`)
@@ -219,7 +269,7 @@ export default function ResultadosPage() {
       printWindow.document.write('</ul></div>')
     }
     
-    if (diagnostico.pontosAtencao?.length > 0) {
+    if (diagnostico.pontosAtencao && diagnostico.pontosAtencao.length > 0) {
       printWindow.document.write('<div class="section"><h2>Pontos de Atenção</h2><ul>')
       diagnostico.pontosAtencao.forEach((ponto: string) => {
         printWindow.document.write(`<li>${ponto}</li>`)
@@ -227,9 +277,14 @@ export default function ResultadosPage() {
       printWindow.document.write('</ul></div>')
     }
     
-    if (diagnostico.recomendacoesPrioritarias?.length > 0) {
+    if (diagnostico.recomendacoesPrioritarias && diagnostico.recomendacoesPrioritarias.length > 0) {
       printWindow.document.write('<div class="section"><h2>Recomendações Prioritárias</h2>')
-      diagnostico.recomendacoesPrioritarias.forEach((rec: any) => {
+      diagnostico.recomendacoesPrioritarias.forEach((rec: {
+        titulo: string;
+        descricao: string;
+        prioridade: string;
+        justificativa?: string;
+      }) => {
         printWindow.document.write(`<h3>${rec.prioridade}. ${rec.titulo}</h3>`)
         printWindow.document.write(`<p>${rec.descricao}</p>`)
         if (rec.justificativa) {
@@ -244,7 +299,7 @@ export default function ResultadosPage() {
       printWindow.document.write(`<p>${diagnostico.conclusao}</p></div>`)
     }
     
-    if (diagnostico.fontes?.length > 0) {
+    if (diagnostico.fontes && diagnostico.fontes.length > 0) {
       printWindow.document.write('<div class="section"><h2>Fontes</h2><ul>')
       diagnostico.fontes.forEach((fonte: string) => {
         printWindow.document.write(`<li>${fonte}</li>`)
@@ -265,7 +320,7 @@ export default function ResultadosPage() {
    * Calcular correlações entre variáveis numéricas com priorização inteligente
    * Priorizamos correlações biologicamente relevantes em zootecnia
    */
-  const calculateCorrelations = (numericStats: any, rawData: any[]) => {
+  const calculateCorrelations = (numericStats: Record<string, unknown>, rawData: Record<string, unknown>[]) => {
     if (!numericStats || !rawData || rawData.length === 0) return []
     
     const variables = Object.keys(numericStats)
@@ -331,8 +386,8 @@ export default function ResultadosPage() {
         
         // Extrair valores válidos
         const pairs = rawData.map(row => ({
-          x: parseFloat(row[var1]),
-          y: parseFloat(row[var2])
+          x: parseFloat(row[var1] as string),
+          y: parseFloat(row[var2] as string)
         })).filter(p => !isNaN(p.x) && !isNaN(p.y))
         
         if (pairs.length < 3) continue
@@ -410,8 +465,8 @@ export default function ResultadosPage() {
   }
 
   // Parse e compatibilidade com formato antigo
-  const analysisData = selectedAnalysis ? (() => {
-    const parsed = JSON.parse(selectedAnalysis.data)
+  const analysisData: AnalysisData | null = selectedAnalysis ? (() => {
+    const parsed = JSON.parse(selectedAnalysis.data) as AnalysisData
     // Compatibilidade: converter formato antigo para novo
     if (parsed.statistics && !parsed.numericStats) {
       parsed.numericStats = parsed.statistics
@@ -422,7 +477,14 @@ export default function ResultadosPage() {
     return parsed
   })() : null
   
-  const metadata = selectedAnalysis ? JSON.parse(selectedAnalysis.metadata) : null
+  interface Metadata {
+    totalRows: number;
+    totalColumns: number;
+    validRows: number;
+    zootechnicalCount?: number;
+  }
+  
+  const metadata: Metadata | null = selectedAnalysis && selectedAnalysis.metadata ? JSON.parse(selectedAnalysis.metadata) as Metadata : null
 
   return (
     <div className="min-h-screen bg-background">
@@ -632,7 +694,12 @@ export default function ResultadosPage() {
                               📊 Análise das Variáveis Numéricas
                             </h4>
                             <div className="space-y-3">
-                              {diagnostico.analiseNumericas.map((analise: any, idx: number) => (
+                              {diagnostico.analiseNumericas.map((analise: {
+                                variavel: string;
+                                status: string;
+                                interpretacao: string;
+                                comparacaoLiteratura?: string;
+                              }, idx: number) => (
                                 <div key={idx} className="border-l-2 border pl-3">
                                   <div className="flex items-center justify-between mb-1">
                                     <span className="font-medium text-foreground">{analise.variavel}</span>
@@ -696,7 +763,12 @@ export default function ResultadosPage() {
                               🎯 Recomendações Prioritárias
                             </h4>
                             <div className="space-y-3">
-                              {diagnostico.recomendacoesPrioritarias.map((rec: any, idx: number) => (
+                              {diagnostico.recomendacoesPrioritarias.map((rec: {
+                                titulo: string;
+                                descricao: string;
+                                prioridade: string;
+                                justificativa?: string;
+                              }, idx: number) => (
                                 <div key={idx} className="border border-purple-200 rounded p-3">
                                   <div className="flex items-center mb-1">
                                     <span className="bg-purple-600 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center mr-2">
@@ -732,7 +804,7 @@ export default function ResultadosPage() {
                           <h3 className="text-lg font-semibold text-foreground">Classificação das Variáveis</h3>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {Object.entries(analysisData.variablesInfo).map(([variable, info]: [string, any]) => (
+                          {Object.entries(analysisData.variablesInfo).map(([variable, info]: [string, VariableInfo]) => (
                             <div key={variable} className="border border rounded-lg p-3">
                               <div className="font-medium text-foreground text-sm mb-1">{variable}</div>
                               <div className="text-xs text-muted-foreground mb-1">
@@ -784,8 +856,8 @@ export default function ResultadosPage() {
                         <h3 className="text-lg font-semibold text-foreground mb-6">Distribuição de Frequências</h3>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                           {Object.keys(analysisData.numericStats).slice(0, 4).map((variable) => {
-                            const values = analysisData.rawData
-                              .map((row: any) => parseFloat(row[variable]))
+                            const values = analysisData.rawData!
+                              .map((row: Record<string, unknown>) => parseFloat(row[variable] as string))
                               .filter((v: number) => !isNaN(v))
                             
                             return values.length > 0 ? (
@@ -810,7 +882,7 @@ export default function ResultadosPage() {
                           <h3 className="text-lg font-semibold text-foreground">Distribuição de Variáveis Categóricas</h3>
                         </div>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                          {Object.entries(analysisData.categoricalStats).map(([variable, stats]: [string, any]) => (
+                          {Object.entries(analysisData.categoricalStats).map(([variable, stats]) => (
                             <PieChartComponent
                               key={variable}
                               data={stats}
@@ -827,7 +899,7 @@ export default function ResultadosPage() {
                       <div className="bg-card shadow rounded-lg p-6">
                         <h3 className="text-lg font-semibold text-foreground mb-4">Estatísticas das Variáveis Categóricas</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {Object.entries(analysisData.categoricalStats).map(([variable, stats]: [string, any]) => (
+                          {Object.entries(analysisData.categoricalStats).map(([variable, stats]) => (
                             <div key={variable} className="border border rounded-lg p-4">
                               <h4 className="font-medium text-foreground mb-3">{variable}</h4>
                               <div className="space-y-2 mb-4">
@@ -855,11 +927,11 @@ export default function ResultadosPage() {
                                 <div className="space-y-1 max-h-48 overflow-y-auto">
                                   {Object.entries(stats.distribution)
                                     .sort((a, b) => (b[1] as number) - (a[1] as number))
-                                    .map(([value, count]: [string, any]) => (
+                                    .map(([value, count]: [string, number]) => (
                                       <div key={value} className="flex justify-between text-sm">
                                         <span className="text-foreground/80 truncate mr-2">{value}</span>
                                         <span className="font-medium whitespace-nowrap">
-                                          {count} ({stats.frequencies[value]}%)
+                                          {count} ({typeof stats.frequencies[value] === 'number' ? stats.frequencies[value] : stats.frequencies[value]}%)
                                         </span>
                                       </div>
                                     ))}
@@ -953,7 +1025,7 @@ export default function ResultadosPage() {
                                     {corr.correlation > 0 ? ' positiva' : ' negativa'}
                                   </div>
                                   <ScatterPlotChart
-                                    data={analysisData.rawData}
+                                    data={analysisData.rawData || []}
                                     xKey={corr.var1}
                                     yKey={corr.var2}
                                     title=""

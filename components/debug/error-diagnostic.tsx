@@ -123,7 +123,7 @@ export default function ErrorDiagnostic() {
     await new Promise(resolve => setTimeout(resolve, 500))
     try {
       const authResponse = await fetch('/api/auth/session')
-      const authData = await authResponse.json()
+      await authResponse.json()
       
       diagnostics[3] = {
         ...diagnostics[3],
@@ -146,6 +146,7 @@ export default function ErrorDiagnostic() {
 
   useEffect(() => {
     runDiagnostics()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
   const getStatusIcon = (status: DiagnosticCheck['status']) => {

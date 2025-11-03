@@ -174,7 +174,7 @@ export function generateArticlesCacheKey(
   query: string, 
   source: string, 
   page: number, 
-  filters: any
+  filters: Record<string, unknown>
 ): string {
   // Normalize query to lowercase and trim whitespace
   // This ensures "Agriculture" and "agriculture" use the same cache
