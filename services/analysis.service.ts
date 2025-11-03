@@ -26,13 +26,12 @@
 
 import { prisma } from '@/lib/prisma'
 import { analyzeDataset } from '@/lib/dataAnalysis'
-import { gerarDiagnosticoLocal } from '@/lib/diagnostico-local'
+import { gerarDiagnosticoLocal, type DiagnosticoLocal } from '@/lib/diagnostico-local'
 import { logger } from '@/lib/logger'
 import type {
   DatasetDTO,
   DatasetData,
   DatasetMetadata,
-  Diagnostico,
   ServiceResult,
 } from '@/types/api'
 
@@ -323,7 +322,7 @@ export class AnalysisService {
   async generateDiagnostic(
     analysisId: string,
     userId: string
-  ): Promise<ServiceResult<Diagnostico>> {
+  ): Promise<ServiceResult<DiagnosticoLocal>> {
     try {
       logger.info('Gerando diagnóstico', { analysisId })
 

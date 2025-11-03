@@ -70,17 +70,22 @@ export interface VariableInfo {
 }
 
 export interface NumericStats {
+  count: number
+  validCount: number
+  missingCount: number
   mean: number
   median: number
-  mode: number | null
+  mode?: number
   stdDev: number
+  variance: number
   min: number
   max: number
+  range: number
   q1: number
   q3: number
   iqr: number
   cv: number
-  skewness: number
+  skewness?: number
   outliers: number[]
 }
 

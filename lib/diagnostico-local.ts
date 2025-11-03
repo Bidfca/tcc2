@@ -7,20 +7,9 @@
  * - Literatura científica consolidada
  */
 
-interface NumericStats {
-  validCount: number
-  mean: string
-  median: string
-  stdDev: string
-  min: string
-  max: string
-  q1: string
-  q3: string
-  cv: string
-  outliers: number[]
-}
+import type { NumericStats } from '@/types/api'
 
-interface DiagnosticoLocal {
+export interface DiagnosticoLocal {
   resumoExecutivo: string
   analiseNumericas: Array<{
     variavel: string
@@ -122,8 +111,8 @@ export function gerarDiagnosticoLocal(
   let variaveis_problematicas = 0
 
   for (const [varName, stats] of Object.entries(numericStats)) {
-    const mean = parseFloat(stats.mean)
-    const cv = parseFloat(stats.cv)
+    const mean = stats.mean
+    const cv = stats.cv
     const tipoVar = identificarTipoVariavel(varName)
     
     let status: 'Excelente' | 'Bom' | 'Regular' | 'Preocupante' = 'Regular'
