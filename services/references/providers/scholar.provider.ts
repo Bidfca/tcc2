@@ -11,9 +11,41 @@
 import axios, { AxiosInstance } from 'axios'
 import { Article, SearchOptions, SearchProvider } from '@/services/references/types'
 
+// SerpAPI Google Scholar result interfaces
+interface ScholarResult {
+  position?: number
+  title?: string
+  result_id?: string
+  link?: string
+  snippet?: string
+  publication_info?: {
+    summary?: string
+    authors?: Array<{ name: string; link?: string }>
+  }
+  inline_links?: {
+    cited_by?: { total: number; link?: string }
+    versions?: { total: number; link?: string }
+    related_articles?: { link?: string }
+  }
+  resources?: Array<{
+    title: string
+    file_format?: string
+    link: string
+  }>
+}
+
+interface ScholarSearchResponse {
+  organic_results?: ScholarResult[]
+  search_metadata?: {
+    status?: string
+    total_results?: number
+  }
+  error?: string
+}
+
 export class GoogleScholarProvider implements SearchProvider {
   private readonly name = 'scholar'
-  private readonly baseUrl = 'https://serpapi.com/search'
+  private readonly baseUrl = 'https://serpapi.com'
   private readonly client: AxiosInstance
   private readonly apiKey: string | undefined
   
@@ -82,18 +114,29 @@ export class GoogleScholarProvider implements SearchProvider {
       
       console.log(`🔍 Google Scholar searching: "${query}" with params:`, { ...params, api_key: '***' })
       
-      const response = await this.client.get('', {
+      const response = await this.client.get<ScholarSearchResponse>('/search', {
         params,
         timeout: 15000
       })
       
+      // Check for API errors
+      if (response.data?.error) {
+        throw new Error(`SerpAPI error: ${response.data.error}`)
+      }
+      
       const results = response.data?.organic_results || []
       console.log(`✅ Google Scholar returned ${results.length} results`)
       
-      return results.map((item: any) => this.transformToArticle(item))
+      return results.map((item) => this.transformToArticle(item))
       
     } catch (error: any) {
-      console.error('❌ Google Scholar search error:', error.response?.data || error.message)
+      if (error.response?.status === 401) {
+        console.error('❌ Google Scholar authentication failed - check SERPAPI_API_KEY')
+      } else if (error.response?.status === 429) {
+        console.error('❌ Google Scholar rate limit exceeded')
+      } else {
+        console.error('❌ Google Scholar search error:', error.response?.data || error.message)
+      }
       return []
     }
   }
@@ -115,7 +158,7 @@ export class GoogleScholarProvider implements SearchProvider {
         num: 1
       }
       
-      const response = await this.client.get('', { params })
+      const response = await this.client.get<ScholarSearchResponse>('/search', { params })
       const results = response.data?.organic_results || []
       
       if (results.length > 0) {
@@ -147,7 +190,7 @@ export class GoogleScholarProvider implements SearchProvider {
         num: 1
       }
       
-      const response = await this.client.get('', { params })
+      const response = await this.client.get<ScholarSearchResponse>('/search', { params })
       return (response.data?.organic_results?.length || 0) > 0
       
     } catch (error) {
@@ -159,7 +202,7 @@ export class GoogleScholarProvider implements SearchProvider {
   /**
    * Transform SerpAPI Google Scholar result to standard Article format
    */
-  private transformToArticle(item: any): Article {
+  private transformToArticle(item: ScholarResult): Article {
     // Extract basic information
     const title = item.title || 'Título não disponível'
     const snippet = item.snippet || ''
@@ -169,6 +212,9 @@ export class GoogleScholarProvider implements SearchProvider {
     
     // Extract year from publication_info
     const year = this.extractYear(item)
+    
+    // Extract DOI if available
+    const doi = this.extractDOI(item)
     
     // Extract journal/publication name
     const journal = this.extractJournal(item)
@@ -183,7 +229,7 @@ export class GoogleScholarProvider implements SearchProvider {
     const citationsCount = item.inline_links?.cited_by?.total || undefined
     
     // Generate article ID
-    const id = item.result_id || `scholar-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const id = item.result_id || `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
     
     return {
       id: `scholar-${id}`,
@@ -191,6 +237,7 @@ export class GoogleScholarProvider implements SearchProvider {
       authors: authors,
       abstract: this.cleanText(snippet),
       year: year,
+      doi: doi,
       journal: journal,
       url: url,
       source: 'scholar' as const,
@@ -205,14 +252,38 @@ export class GoogleScholarProvider implements SearchProvider {
   }
   
   /**
+   * Extract DOI from Google Scholar result
+   */
+  private extractDOI(item: ScholarResult): string | undefined {
+    // Check in the link first
+    if (item.link && item.link.includes('doi.org/')) {
+      const doiMatch = item.link.match(/doi\.org\/([^?&#]+)/i)
+      if (doiMatch && doiMatch[1]) {
+        return doiMatch[1].trim()
+      }
+    }
+    
+    // Check in snippet or title
+    const text = `${item.title || ''} ${item.snippet || ''}`
+    const doiPattern = /\b(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+)/
+    const match = text.match(doiPattern)
+    
+    if (match && match[1]) {
+      return match[1].replace(/[.,;]+$/, '').trim()
+    }
+    
+    return undefined
+  }
+  
+  /**
    * Extract authors from Google Scholar result
    */
-  private extractAuthors(item: any): string[] {
+  private extractAuthors(item: ScholarResult): string[] {
     // Try to get authors from publication_info
-    if (item.publication_info?.authors) {
-      return item.publication_info.authors.map((author: any) => 
-        author.name || 'Autor não disponível'
-      )
+    if (item.publication_info?.authors && item.publication_info.authors.length > 0) {
+      return item.publication_info.authors
+        .map((author) => author.name)
+        .filter((name): name is string => !!name)
     }
     
     // Try to parse from publication_info.summary
@@ -222,7 +293,10 @@ export class GoogleScholarProvider implements SearchProvider {
       const authorMatch = summary.match(/^([^-]+)\s*-/)
       if (authorMatch) {
         const authorsStr = authorMatch[1].trim()
-        return authorsStr.split(',').map((a: string) => a.trim()).filter((a: string) => a.length > 0)
+        const authors = authorsStr.split(',').map((a) => a.trim()).filter((a) => a.length > 0)
+        if (authors.length > 0) {
+          return authors
+        }
       }
     }
     
@@ -232,7 +306,7 @@ export class GoogleScholarProvider implements SearchProvider {
   /**
    * Extract publication year
    */
-  private extractYear(item: any): number {
+  private extractYear(item: ScholarResult): number {
     // Try publication_info first
     if (item.publication_info?.summary) {
       const yearMatch = item.publication_info.summary.match(/\b(19|20)\d{2}\b/)
@@ -242,19 +316,20 @@ export class GoogleScholarProvider implements SearchProvider {
     }
     
     // Try to find year in title or snippet
-    const text = `${item.title} ${item.snippet}`
+    const text = `${item.title || ''} ${item.snippet || ''}`
     const yearMatch = text.match(/\b(19|20)\d{2}\b/)
     if (yearMatch) {
       return parseInt(yearMatch[0])
     }
     
+    // Return current year as fallback (best guess for undated content)
     return new Date().getFullYear()
   }
   
   /**
    * Extract journal/publication name
    */
-  private extractJournal(item: any): string {
+  private extractJournal(item: ScholarResult): string {
     if (item.publication_info?.summary) {
       // Format: "Authors - Journal/Conference, Year"
       const parts = item.publication_info.summary.split('-')
@@ -272,10 +347,10 @@ export class GoogleScholarProvider implements SearchProvider {
   /**
    * Extract PDF URL if available
    */
-  private extractPdfUrl(item: any): string | undefined {
+  private extractPdfUrl(item: ScholarResult): string | undefined {
     // Check for PDF resources
-    if (item.resources) {
-      const pdfResource = item.resources.find((r: any) => 
+    if (item.resources && item.resources.length > 0) {
+      const pdfResource = item.resources.find((r) => 
         r.file_format?.toLowerCase() === 'pdf'
       )
       if (pdfResource?.link) {
@@ -294,7 +369,7 @@ export class GoogleScholarProvider implements SearchProvider {
   /**
    * Infer publication type from available data
    */
-  private inferPublicationType(item: any): Article['publicationType'] {
+  private inferPublicationType(item: ScholarResult): Article['publicationType'] {
     const titleLower = item.title?.toLowerCase() || ''
     const snippet = item.snippet?.toLowerCase() || ''
     

@@ -2,7 +2,7 @@
 
 **[English](README.md)** | **[Português (Brasil)](README.pt-BR.md)**
 
-AgroInsight is a comprehensive livestock data management and analysis platform designed for researchers, farmers, and animal scientists. Built with modern web technologies, it offers intelligent data validation, automatic unit conversion, and collaborative workflows.
+AgroInsight is a comprehensive livestock data management and analysis platform designed for researchers, farmers, and animal scientists. Built with modern web technologies, it offers intelligent data validation, automatic unit conversion, and collaborative workflows. 
 
 ## Features
 
@@ -294,6 +294,43 @@ For complete details, see: [`docs/MIDDLEWARE_SYSTEM.md`](docs/MIDDLEWARE_SYSTEM.
 - **[Middleware System](docs/MIDDLEWARE_SYSTEM.md)** - Security, logger, and rate limiting
 - **[Technical Documentation](docs/DOCUMENTACAO_TECNICA.md)** - Architecture and technical details
 - **[Quick Start Guide](docs/GUIA_USO_RAPIDO.md)** - Tutorial for end users
+
+## 🚀 Production Deployment
+
+AgroInsight is ready to deploy on **Vercel** with **PostgreSQL**. The project includes:
+
+- **Migration scripts** from SQLite to PostgreSQL
+- **Automatic configuration** for Vercel
+- **Complete deployment guide** with step-by-step instructions
+
+### Quick Deploy
+
+1. **Backup your data** (if migrating from SQLite):
+   ```bash
+   npm run backup:sqlite
+   ```
+
+2. **Push to GitHub**:
+   ```bash
+   git push origin main
+   ```
+
+3. **Deploy to Vercel**:
+   - Import repository at [vercel.com/new](https://vercel.com/new)
+   - Configure environment variables
+   - Deploy automatically
+
+### Required Services
+
+- **PostgreSQL**: [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres) (recommended) or [Supabase](https://supabase.com)
+- **Redis**: [Upstash Redis](https://upstash.com) (required for cache)
+- **APIs** (optional): Google Gemini, OpenAI, SerpAPI
+
+### Documentation
+
+- **[Complete Deploy Guide](DEPLOY_GUIDE.md)** - Step-by-step deployment instructions
+- **[Migration Guide](docs/MIGRATION_POSTGRESQL.md)** - SQLite to PostgreSQL migration
+- **[Deploy Checklist](DEPLOY_CHECKLIST.md)** - Deployment task checklist
 
 ## Contributing
 

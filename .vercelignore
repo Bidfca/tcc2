@@ -1,0 +1,42 @@
+# Arquivos de desenvolvimento
+*.db
+*.db-journal
+dev.db
+dev.db-journal
+
+# Node modules
+node_modules/
+
+# Coverage
+coverage/
+
+# Backup
+backup/
+
+# Testes
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+test-*.js
+test-*.mjs
+
+# Docs
+docs/
+*.md
+!README.md
+
+# Scripts de desenvolvimento
+scripts/backup-sqlite-data.ts
+scripts/restore-to-postgresql.ts
+debug-service.mjs
+
+# Batch files
+*.bat
+
+# Outros
+.env.local
+.env.development
+.env.test
+tsconfig.tsbuildinfo
