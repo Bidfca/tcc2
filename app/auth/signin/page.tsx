@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { signIn, getSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Sprout, Eye, EyeOff, ArrowLeft } from 'lucide-react'
+import { Sprout, Eye, EyeOff, ArrowLeft, Info } from 'lucide-react'
 import ErrorDiagnostic from '@/components/debug/error-diagnostic'
 
 export default function SignInPage() {
@@ -174,13 +174,45 @@ export default function SignInPage() {
             </button>
           </div>
 
-          <div className="text-center">
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              Contas de demonstração:
+          <div className="relative mt-6">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600" />
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Admin: admin@agroinsight.com / admin123<br />
-              Usuário: researcher@agroinsight.com / user123
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 text-gray-500 dark:text-gray-400">
+                ou use uma conta demo
+              </span>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <Info className="h-6 w-6 text-blue-600 dark:text-blue-400 animate-pulse" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                  🚀 Contas de Demonstração
+                </h3>
+                <div className="space-y-2 text-xs">
+                  <div className="bg-white/60 dark:bg-gray-800/60 rounded p-2 border border-blue-100 dark:border-blue-800">
+                    <div className="font-medium text-blue-800 dark:text-blue-200">👨‍💼 Admin</div>
+                    <div className="text-gray-700 dark:text-gray-300 mt-1">
+                      <span className="font-mono">admin@agroinsight.com</span>
+                      <span className="mx-1">•</span>
+                      <span className="font-mono">admin123</span>
+                    </div>
+                  </div>
+                  <div className="bg-white/60 dark:bg-gray-800/60 rounded p-2 border border-blue-100 dark:border-blue-800">
+                    <div className="font-medium text-blue-800 dark:text-blue-200">👤 Usuário</div>
+                    <div className="text-gray-700 dark:text-gray-300 mt-1">
+                      <span className="font-mono">researcher@agroinsight.com</span>
+                      <span className="mx-1">•</span>
+                      <span className="font-mono">user123</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </form>
