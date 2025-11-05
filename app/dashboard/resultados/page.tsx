@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -70,7 +70,7 @@ interface AnalysisData {
   };
 }
 
-export default function ResultadosPage() {
+function ResultadosContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -1031,5 +1031,13 @@ export default function ResultadosPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ResultadosPage() {
+  return (
+    <Suspense fallback={<AnalysisLoadingSkeleton />}>
+      <ResultadosContent />
+    </Suspense>
   )
 }
