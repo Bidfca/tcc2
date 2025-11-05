@@ -31,6 +31,7 @@ import {
 import { CorrelationHeatmap } from '@/components/analysis/charts/CorrelationHeatmap'
 import { EnhancedScatterPlot } from '@/components/analysis/charts/EnhancedScatterPlot'
 import { CorrelationMatrix } from '@/components/analysis/charts/CorrelationMatrix'
+import type { CorrelationAnalysisReport } from '@/lib/correlations/correlation-analysis'
 import { VariableType, VariableInfo, NumericStats, CategoricalStats } from '@/lib/dataAnalysis'
 import { AnalysisLoadingSkeleton } from '@/components/skeleton'
 import { toast } from 'sonner'
@@ -61,6 +62,12 @@ interface AnalysisData {
   zootechnicalVariables?: string[];
   totalRows?: number;
   totalColumns?: number;
+  correlations?: {
+    report: CorrelationAnalysisReport;
+    proposals: { var1: string; var2: string; reason: string; priority: number }[];
+    missingVariables: { variable: string; importance: string; reason: string }[];
+    analyzedAt: string;
+  };
 }
 
 export default function ResultadosPage() {

@@ -101,11 +101,12 @@ export async function POST(request: NextRequest) {
       }
     )
 
-    const numericColumns = Object.keys(parsed.data[0] || {}).filter(
-      key => typeof parsed.data[0][key] === 'number'
-    )
-    const correlationProposals = proposeCorrelations(numericColumns, species)
-    const missingVariables = getMissingVariables(numericColumns, species)
+    const rows = (parsed.data ?? []) as Array<Record<string, unknown>>
+    const firstRow = rows[0] ?? {}
+    const availableColumns = Object.keys(firstRow)
+    
+    const correlationProposals = proposeCorrelations(availableColumns, species)
+    const missingVariables = getMissingVariables(availableColumns, species)
 
     console.log(`✅ Encontradas ${correlationReport.totalCorrelations} correlações (${correlationReport.significantCorrelations} significativas)`)
 
