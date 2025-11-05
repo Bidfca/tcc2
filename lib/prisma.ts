@@ -28,12 +28,20 @@ const globalForPrisma = globalThis as unknown as {
 const getDatabaseUrl = () => {
   const baseUrl = process.env.DATABASE_URL || ''
   
+  if (!baseUrl || baseUrl === '') {
+    return baseUrl
+  }
+  
   // In Vercel or production, add pgbouncer mode to prevent prepared statement conflicts
   if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
-    const url = new URL(baseUrl)
-    url.searchParams.set('pgbouncer', 'true')
-    url.searchParams.set('connection_limit', '1')
-    return url.toString()
+    try {
+      const url = new URL(baseUrl)
+      url.searchParams.set('pgbouncer', 'true')
+      url.searchParams.set('connection_limit', '1')
+      return url.toString()
+    } catch {
+      return baseUrl
+    }
   }
   
   return baseUrl
