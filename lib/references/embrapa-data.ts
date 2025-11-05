@@ -226,7 +226,7 @@ export const EMBRAPA_REFERENCES = {
 
   // OVINOS E CAPRINOS - EMBRAPA Caprinos e Ovinos
   sheep_goat: {
-    ovinos: {
+    ovinos_corte: {
       peso_nascimento: { 
         min: 3, ideal: 4, max: 5, 
         unit: 'kg', source: 'EMBRAPA Caprinos e Ovinos 2023' 
@@ -264,7 +264,87 @@ export const EMBRAPA_REFERENCES = {
         unit: 'pontos', source: 'EMBRAPA Caprinos e Ovinos 2023' 
       }
     },
-    caprinos: {
+    ovinos_la: {
+      peso_nascimento: { 
+        min: 3.5, ideal: 4.5, max: 5.5, 
+        unit: 'kg', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      peso_vivo_adulto: { 
+        min: 50, ideal: 65, max: 80, 
+        unit: 'kg', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      producao_la_anual: { 
+        min: 2.5, ideal: 4.0, max: 6.0, 
+        unit: 'kg/ano', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      diametro_fibra: { 
+        min: 18, ideal: 22, max: 28, 
+        unit: 'microns', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      comprimento_mecha: { 
+        min: 6, ideal: 8, max: 12, 
+        unit: 'cm', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      rendimento_la_limpa: { 
+        min: 55, ideal: 65, max: 75, 
+        unit: '%', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      prolificidade: { 
+        min: 1.0, ideal: 1.3, max: 1.6, 
+        unit: 'crias/parto', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      intervalo_partos: { 
+        min: 300, ideal: 365, max: 400, 
+        unit: 'dias', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      escore_corporal: { 
+        min: 2.5, ideal: 3.0, max: 3.5, 
+        unit: 'pontos', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      }
+    },
+    ovinos_leite: {
+      peso_nascimento: { 
+        min: 3.0, ideal: 4.0, max: 5.0, 
+        unit: 'kg', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      producao_leite_dia: { 
+        min: 0.8, ideal: 1.5, max: 2.5, 
+        unit: 'L/dia', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      producao_leite_lactacao: { 
+        min: 120, ideal: 200, max: 300, 
+        unit: 'L', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      gordura_leite: { 
+        min: 5.0, ideal: 6.5, max: 8.0, 
+        unit: '%', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      proteina_leite: { 
+        min: 4.5, ideal: 5.5, max: 6.5, 
+        unit: '%', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      celulas_somaticas: { 
+        min: 200000, ideal: 400000, max: 800000, 
+        unit: 'cel/mL', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      duracao_lactacao: { 
+        min: 120, ideal: 180, max: 240, 
+        unit: 'dias', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      prolificidade: { 
+        min: 1.3, ideal: 1.6, max: 2.0, 
+        unit: 'crias/parto', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      intervalo_partos: { 
+        min: 240, ideal: 300, max: 365, 
+        unit: 'dias', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      escore_corporal: { 
+        min: 2.5, ideal: 3.0, max: 3.5, 
+        unit: 'pontos', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      }
+    },
+    caprinos_corte: {
       peso_nascimento: { 
         min: 2.5, ideal: 3.5, max: 4.5, 
         unit: 'kg', source: 'EMBRAPA Caprinos e Ovinos 2023' 
@@ -281,20 +361,100 @@ export const EMBRAPA_REFERENCES = {
         min: 30, ideal: 35, max: 40, 
         unit: 'kg', source: 'EMBRAPA Caprinos e Ovinos 2023' 
       },
-      producao_leite: { 
-        min: 1, ideal: 2, max: 3, 
-        unit: 'L/dia', source: 'EMBRAPA Caprinos e Ovinos 2023' 
-      },
-      gordura_leite: { 
-        min: 3.0, ideal: 3.5, max: 4.5, 
-        unit: '%', source: 'EMBRAPA Caprinos e Ovinos 2023' 
-      },
-      proteina_leite: { 
-        min: 2.8, ideal: 3.2, max: 3.8, 
+      rendimento_carcaca: { 
+        min: 40, ideal: 45, max: 50, 
         unit: '%', source: 'EMBRAPA Caprinos e Ovinos 2023' 
       },
       prolificidade: { 
         min: 1.4, ideal: 1.7, max: 2.0, 
+        unit: 'crias/parto', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      intervalo_partos: { 
+        min: 240, ideal: 280, max: 320, 
+        unit: 'dias', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      mortalidade_cria: { 
+        min: 3, ideal: 5, max: 10, 
+        unit: '%', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      escore_corporal: { 
+        min: 2.0, ideal: 2.5, max: 3.0, 
+        unit: 'pontos', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      }
+    },
+    caprinos_leite: {
+      peso_nascimento: { 
+        min: 2.5, ideal: 3.5, max: 4.5, 
+        unit: 'kg', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      producao_leite_dia: { 
+        min: 1.5, ideal: 2.5, max: 4.0, 
+        unit: 'L/dia', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      producao_leite_lactacao: { 
+        min: 250, ideal: 400, max: 600, 
+        unit: 'L', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      gordura_leite: { 
+        min: 3.0, ideal: 3.8, max: 5.0, 
+        unit: '%', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      proteina_leite: { 
+        min: 2.8, ideal: 3.4, max: 4.2, 
+        unit: '%', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      celulas_somaticas: { 
+        min: 300000, ideal: 500000, max: 1000000, 
+        unit: 'cel/mL', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      duracao_lactacao: { 
+        min: 180, ideal: 240, max: 305, 
+        unit: 'dias', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      prolificidade: { 
+        min: 1.5, ideal: 1.8, max: 2.2, 
+        unit: 'crias/parto', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      intervalo_partos: { 
+        min: 240, ideal: 300, max: 365, 
+        unit: 'dias', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      escore_corporal: { 
+        min: 2.5, ideal: 3.0, max: 3.5, 
+        unit: 'pontos', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      }
+    },
+    caprinos_pele: {
+      peso_nascimento: { 
+        min: 2.5, ideal: 3.5, max: 4.5, 
+        unit: 'kg', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      peso_abate: { 
+        min: 25, ideal: 30, max: 35, 
+        unit: 'kg', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      area_pele: { 
+        min: 0.6, ideal: 0.8, max: 1.0, 
+        unit: 'm²', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      espessura_pele: { 
+        min: 0.8, ideal: 1.2, max: 1.6, 
+        unit: 'mm', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      qualidade_pele: { 
+        min: 6, ideal: 8, max: 10, 
+        unit: 'pontos', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      rendimento_pele: { 
+        min: 8, ideal: 10, max: 12, 
+        unit: '%', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      defeitos_pele: { 
+        min: 0, ideal: 2, max: 5, 
+        unit: 'defeitos/pele', source: 'EMBRAPA Caprinos e Ovinos 2023' 
+      },
+      prolificidade: { 
+        min: 1.3, ideal: 1.6, max: 1.9, 
         unit: 'crias/parto', source: 'EMBRAPA Caprinos e Ovinos 2023' 
       },
       intervalo_partos: { 
@@ -387,9 +547,33 @@ export const EMBRAPA_REFERENCES = {
         min: 1.8, ideal: 2.2, max: 2.6, 
         unit: 'kg/kg', source: 'EMBRAPA Pesca e Aquicultura 2023' 
       },
+      gpd: { 
+        min: 2.5, ideal: 4.0, max: 6.0, 
+        unit: 'g/dia', source: 'EMBRAPA Pesca e Aquicultura 2023' 
+      },
       peso_abate: { 
         min: 1000, ideal: 1800, max: 2500, 
         unit: 'g', source: 'EMBRAPA Pesca e Aquicultura 2023' 
+      },
+      sobrevivencia: { 
+        min: 75, ideal: 85, max: 92, 
+        unit: '%', source: 'EMBRAPA Pesca e Aquicultura 2023' 
+      },
+      temperatura: { 
+        min: 24, ideal: 28, max: 30, 
+        unit: '°C', source: 'EMBRAPA Pesca e Aquicultura 2023' 
+      },
+      oxigenio_dissolvido: { 
+        min: 4, ideal: 6, max: 8, 
+        unit: 'mg/L', source: 'EMBRAPA Pesca e Aquicultura 2023' 
+      },
+      ph: { 
+        min: 6.5, ideal: 7.5, max: 8.5, 
+        unit: '', source: 'EMBRAPA Pesca e Aquicultura 2023' 
+      },
+      amonia_total: { 
+        min: 0, ideal: 0.5, max: 1.0, 
+        unit: 'mg/L', source: 'EMBRAPA Pesca e Aquicultura 2023' 
       }
     },
     pacu: {
@@ -401,9 +585,33 @@ export const EMBRAPA_REFERENCES = {
         min: 1.6, ideal: 2.0, max: 2.4, 
         unit: 'kg/kg', source: 'EMBRAPA Pesca e Aquicultura 2023' 
       },
+      gpd: { 
+        min: 2.0, ideal: 3.5, max: 5.5, 
+        unit: 'g/dia', source: 'EMBRAPA Pesca e Aquicultura 2023' 
+      },
       peso_abate: { 
         min: 800, ideal: 1200, max: 1600, 
         unit: 'g', source: 'EMBRAPA Pesca e Aquicultura 2023' 
+      },
+      sobrevivencia: { 
+        min: 80, ideal: 88, max: 95, 
+        unit: '%', source: 'EMBRAPA Pesca e Aquicultura 2023' 
+      },
+      temperatura: { 
+        min: 25, ideal: 28, max: 32, 
+        unit: '°C', source: 'EMBRAPA Pesca e Aquicultura 2023' 
+      },
+      oxigenio_dissolvido: { 
+        min: 4, ideal: 6, max: 8, 
+        unit: 'mg/L', source: 'EMBRAPA Pesca e Aquicultura 2023' 
+      },
+      ph: { 
+        min: 6.5, ideal: 7.5, max: 8.5, 
+        unit: '', source: 'EMBRAPA Pesca e Aquicultura 2023' 
+      },
+      amonia_total: { 
+        min: 0, ideal: 0.5, max: 1.0, 
+        unit: 'mg/L', source: 'EMBRAPA Pesca e Aquicultura 2023' 
       }
     }
   }

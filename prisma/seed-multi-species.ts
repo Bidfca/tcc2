@@ -253,13 +253,37 @@ async function seedSheepGoatReferences(species: Record<string, any>, subtypes: R
   let count = 0
   const sgData = EMBRAPA_REFERENCES.sheep_goat
   
+  const sheepMapping: Record<string, string> = {
+    'ovinos_corte': 'meat',
+    'ovinos_la': 'wool',
+    'ovinos_leite': 'milk'
+  }
+  
+  const goatMapping: Record<string, string> = {
+    'caprinos_corte': 'meat',
+    'caprinos_leite': 'milk',
+    'caprinos_pele': 'skin'
+  }
+  
   // Ovinos
-  if (species.sheep && sgData.ovinos) {
-    for (const [metric, values] of Object.entries(sgData.ovinos)) {
-      // Para ovinos, usar subtipo 'meat' como padrão
-      const subtype = subtypes['sheep_meat']
+  if (species.sheep) {
+    for (const [dataKey, subtypeCode] of Object.entries(sheepMapping)) {
+      const metrics = (sgData as any)[dataKey]
+      if (!metrics) continue
       
-      if (subtype) {
+      const subtype = subtypes[`sheep_${subtypeCode}`]
+      if (!subtype) {
+        console.warn(`  ⚠ Subtipo de ovinos não encontrado: ${subtypeCode}`)
+        continue
+      }
+      
+      for (const [metric, values] of Object.entries(metrics as Record<string, {
+        min: number
+        ideal: number
+        max: number
+        unit: string
+        source: string
+      }>)) {
         const existing = await prisma.referenceData.findFirst({
           where: {
             speciesId: species.sheep.id,
@@ -289,12 +313,24 @@ async function seedSheepGoatReferences(species: Record<string, any>, subtypes: R
   }
   
   // Caprinos
-  if (species.goat && sgData.caprinos) {
-    for (const [metric, values] of Object.entries(sgData.caprinos)) {
-      // Para caprinos, usar subtipo 'meat' como padrão
-      const subtype = subtypes['goat_meat']
+  if (species.goat) {
+    for (const [dataKey, subtypeCode] of Object.entries(goatMapping)) {
+      const metrics = (sgData as any)[dataKey]
+      if (!metrics) continue
       
-      if (subtype) {
+      const subtype = subtypes[`goat_${subtypeCode}`]
+      if (!subtype) {
+        console.warn(`  ⚠ Subtipo de caprinos não encontrado: ${subtypeCode}`)
+        continue
+      }
+      
+      for (const [metric, values] of Object.entries(metrics as Record<string, {
+        min: number
+        ideal: number
+        max: number
+        unit: string
+        source: string
+      }>)) {
         const existing = await prisma.referenceData.findFirst({
           where: {
             speciesId: species.goat.id,

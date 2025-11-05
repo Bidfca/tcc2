@@ -114,9 +114,19 @@ export class ReferenceDataService {
     
     // Ovinos e Caprinos
     if (species === 'sheep' || species === 'goat') {
-      const sgData = EMBRAPA_REFERENCES.sheep_goat
-      const embrapaSpecies = species === 'sheep' ? 'ovinos' : 'caprinos'
-      return sgData[embrapaSpecies] || null
+      const sgData = EMBRAPA_REFERENCES.sheep_goat as Record<string, Record<string, ReferenceMetric>>
+      
+      if (!subtype) return null
+      
+      const subtypeMapping: Record<string, string> = {
+        'meat': species === 'sheep' ? 'ovinos_corte' : 'caprinos_corte',
+        'wool': 'ovinos_la',
+        'milk': species === 'sheep' ? 'ovinos_leite' : 'caprinos_leite',
+        'skin': 'caprinos_pele'
+      }
+      
+      const embrapaKey = subtypeMapping[subtype]
+      return embrapaKey ? sgData[embrapaKey] : null
     }
     
     // Piscicultura

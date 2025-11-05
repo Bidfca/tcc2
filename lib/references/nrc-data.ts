@@ -112,6 +112,10 @@ export const NRC_REFERENCES = {
       conversao: { 
         min: 2.0, ideal_min: 2.2, ideal_max: 2.5, max: 2.8, 
         unit: 'kg/kg', source: 'NRC Swine 2012' 
+      },
+      mortalidade: { 
+        min: 0, ideal_min: 1, ideal_max: 2, max: 3, 
+        unit: '%', source: 'NRC Swine 2012' 
       }
     },
     finishing: {
@@ -142,6 +146,10 @@ export const NRC_REFERENCES = {
       profundidade_lombo: { 
         min: 45, ideal_min: 50, ideal_max: 60, max: 65, 
         unit: 'mm', source: 'NRC Swine 2012' 
+      },
+      mortalidade: { 
+        min: 0, ideal_min: 1, ideal_max: 2, max: 3, 
+        unit: '%', source: 'NRC Swine 2012' 
       }
     },
     breeding: {
@@ -168,6 +176,14 @@ export const NRC_REFERENCES = {
       partos_porca_ano: { 
         min: 2.2, ideal_min: 2.3, ideal_max: 2.5, max: 2.6, 
         unit: 'partos', source: 'NRC Swine 2012' 
+      },
+      mortalidade_leitoes: { 
+        min: 5, ideal_min: 8, ideal_max: 12, max: 15, 
+        unit: '%', source: 'NRC Swine 2012' 
+      },
+      mortalidade_matrizes: { 
+        min: 0, ideal_min: 3, ideal_max: 6, max: 10, 
+        unit: '%/ano', source: 'NRC Swine 2012' 
       }
     }
   },
