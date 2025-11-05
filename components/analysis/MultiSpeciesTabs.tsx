@@ -189,26 +189,51 @@ export function MultiSpeciesTabs({
 
   // Carregar dados de referência quando mudar espécie/subtipo
   useEffect(() => {
-    loadReferenceData(selectedSpecies, selectedSubtype)
-  }, [selectedSpecies, selectedSubtype])
-
-  const loadReferenceData = async (species: string, subtype: string | null) => {
-    setLoading(true)
-    try {
-      const url = `/api/reference/${species}/data`
-      const response = await fetch(subtype ? `${url}?subtype=${subtype}` : url)
-      if (response.ok) {
-        const result = await response.json()
-        setReferenceData(result.data)
-        console.log('📊 Dados de referência carregados:', result)
+    const controller = new AbortController()
+    
+    const loadData = async () => {
+      // Limpar dados antigos imediatamente ao trocar de espécie/subtipo
+      setReferenceData(null)
+      setLoading(true)
+      
+      try {
+        const url = `/api/reference/${selectedSpecies}/data`
+        const response = await fetch(
+          selectedSubtype ? `${url}?subtype=${selectedSubtype}` : url,
+          { signal: controller.signal }
+        )
+        
+        if (response.ok) {
+          const result = await response.json()
+          if (!controller.signal.aborted) {
+            setReferenceData(result.data)
+            console.log('📊 Dados de referência carregados:', result)
+          }
+        } else {
+          if (!controller.signal.aborted) {
+            console.warn('⚠️ Nenhuma referência encontrada para:', selectedSpecies, selectedSubtype)
+            setReferenceData(null)
+          }
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error('Erro ao carregar referências:', error)
+          toast.error('Erro ao carregar dados de referência')
+          setReferenceData(null)
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false)
+        }
       }
-    } catch (error) {
-      console.error('Erro ao carregar referências:', error)
-      toast.error('Erro ao carregar dados de referência')
-    } finally {
-      setLoading(false)
     }
-  }
+    
+    loadData()
+    
+    return () => {
+      controller.abort()
+    }
+  }, [selectedSpecies, selectedSubtype])
 
   const handleSubtypeChange = (subtypeId: string) => {
     setSelectedSubtype(subtypeId)

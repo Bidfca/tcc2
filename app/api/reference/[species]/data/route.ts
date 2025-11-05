@@ -19,10 +19,16 @@ export async function GET(
     
     console.log('🔍 Buscando referências:', { species, subtype, metric })
 
-    // Primeiro, tenta buscar do banco de dados
-    const speciesRecord = await prisma.animalSpecies.findUnique({
-      where: { code: species }
-    })
+    // Primeiro, tenta buscar do banco de dados (se disponível)
+    let speciesRecord = null
+    try {
+      speciesRecord = await prisma.animalSpecies.findUnique({
+        where: { code: species }
+      })
+    } catch (dbError) {
+      // Se Prisma falhar (ex: DATABASE_URL não configurado), continua para hardcoded
+      console.warn('⚠️ Banco de dados não disponível, usando dados hardcoded:', dbError)
+    }
     
     if (!speciesRecord) {
       // Se não encontrar no banco, usa dados hardcoded
