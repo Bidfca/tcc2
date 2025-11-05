@@ -7,6 +7,7 @@ import { ReferenceDataService } from '@/lib/references/species-references'
 import Papa from 'papaparse'
 import { validateUploadedFile, generateUniqueFilename } from '@/lib/upload-security'
 import { withRateLimit } from '@/lib/rate-limit'
+import { analyzeCorrelations, proposeCorrelations, getMissingVariables } from '@/lib/correlations/correlation-analysis'
 
 export async function POST(request: NextRequest) {
   // Apply rate limiting
@@ -87,6 +88,28 @@ export async function POST(request: NextRequest) {
       species
     )
 
+    // Análise de correlações
+    console.log('🔬 Analisando correlações biologicamente relevantes...')
+    const correlationReport = analyzeCorrelations(
+      parsed.data as Record<string, unknown>[],
+      species,
+      {
+        maxCorrelations: 20,
+        minRelevanceScore: 5,
+        minDataPoints: 10,
+        significanceLevel: 0.05
+      }
+    )
+
+    const rows = (parsed.data ?? []) as Array<Record<string, unknown>>
+    const firstRow = rows[0] ?? {}
+    const availableColumns = Object.keys(firstRow)
+    
+    const correlationProposals = proposeCorrelations(availableColumns, species)
+    const missingVariables = getMissingVariables(availableColumns, species)
+
+    console.log(`✅ Encontradas ${correlationReport.totalCorrelations} correlações (${correlationReport.significantCorrelations} significativas)`)
+
     // Se não tem projectId, usar o primeiro projeto do usuário
     let finalProjectId = projectId
     if (!finalProjectId) {
@@ -126,7 +149,13 @@ export async function POST(request: NextRequest) {
           raw: parsed.data.slice(0, 100), // Limitar dados brutos para economia de espaço
           statistics,
           references,
-          interpretation
+          interpretation,
+          correlations: {
+            report: correlationReport,
+            proposals: correlationProposals,
+            missingVariables,
+            analyzedAt: new Date().toISOString()
+          }
         }),
         metadata: JSON.stringify({
           species,
@@ -153,6 +182,12 @@ export async function POST(request: NextRequest) {
         overallStatus: references.overallStatus,
         summary: references.summary,
         interpretation,
+        correlations: {
+          total: correlationReport.totalCorrelations,
+          significant: correlationReport.significantCorrelations,
+          highRelevance: correlationReport.highRelevanceCorrelations,
+          topCorrelations: correlationReport.topCorrelations.slice(0, 5)
+        },
         createdAt: analysis.createdAt
       }
     })

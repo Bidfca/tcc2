@@ -24,11 +24,14 @@ import { LaymanTab } from '@/components/layman'
 import {
   BoxPlotChart,
   PieChartComponent,
-  ScatterPlotChart,
   HistogramChart,
   StatsTable,
   StatCard
 } from '@/components/AdvancedCharts'
+import { CorrelationHeatmap } from '@/components/analysis/charts/CorrelationHeatmap'
+import { EnhancedScatterPlot } from '@/components/analysis/charts/EnhancedScatterPlot'
+import { CorrelationMatrix } from '@/components/analysis/charts/CorrelationMatrix'
+import type { CorrelationAnalysisReport } from '@/lib/correlations/correlation-analysis'
 import { VariableType, VariableInfo, NumericStats, CategoricalStats } from '@/lib/dataAnalysis'
 import { AnalysisLoadingSkeleton } from '@/components/skeleton'
 import { toast } from 'sonner'
@@ -59,6 +62,12 @@ interface AnalysisData {
   zootechnicalVariables?: string[];
   totalRows?: number;
   totalColumns?: number;
+  correlations?: {
+    report: CorrelationAnalysisReport;
+    proposals: { var1: string; var2: string; reason: string; priority: number }[];
+    missingVariables: { variable: string; importance: string; reason: string }[];
+    analyzedAt: string;
+  };
 }
 
 export default function ResultadosPage() {
@@ -319,126 +328,6 @@ export default function ResultadosPage() {
     }, 250)
   }
 
-  /**
-   * Calcular correlações entre variáveis numéricas com priorização inteligente
-   * Priorizamos correlações biologicamente relevantes em zootecnia
-   */
-  const calculateCorrelations = (numericStats: Record<string, unknown>, rawData: Record<string, unknown>[]) => {
-    if (!numericStats || !rawData || rawData.length === 0) return []
-    
-    const variables = Object.keys(numericStats)
-    const correlations: Array<{
-      var1: string
-      var2: string
-      correlation: number
-      data: Array<{x: number, y: number}>
-      relevanceScore: number
-      category: string
-    }> = []
-    
-    // Definir pares de variáveis com relevância biológica
-    const biologicalPairs = [
-      // Crescimento e desenvolvimento
-      { keywords1: ['peso_nascimento', 'birth_weight', 'peso_nasc'], keywords2: ['peso_desmame', 'weaning_weight', 'peso_desm'], category: 'Crescimento', score: 10 },
-      { keywords1: ['peso_desmame', 'weaning_weight', 'peso_desm'], keywords2: ['peso_atual', 'current_weight', 'peso_final'], category: 'Crescimento', score: 10 },
-      { keywords1: ['peso_nascimento', 'birth_weight'], keywords2: ['peso_atual', 'current_weight', 'peso_final'], category: 'Crescimento', score: 9 },
-      
-      // Morfometria
-      { keywords1: ['peso', 'weight'], keywords2: ['altura', 'height', 'cernelha'], category: 'Morfometria', score: 8 },
-      { keywords1: ['peso', 'weight'], keywords2: ['perimetro', 'perimeter', 'toracico'], category: 'Morfometria', score: 8 },
-      { keywords1: ['altura', 'height'], keywords2: ['perimetro', 'perimeter'], category: 'Morfometria', score: 7 },
-      
-      // Performance e eficiência
-      { keywords1: ['gpd', 'gmd', 'ganho', 'gain'], keywords2: ['peso', 'weight'], category: 'Performance', score: 9 },
-      { keywords1: ['consumo', 'intake', 'feed'], keywords2: ['ganho', 'gain', 'gpd'], category: 'Eficiência', score: 9 },
-      { keywords1: ['conversao', 'conversion', 'ca'], keywords2: ['ganho', 'gain'], category: 'Eficiência', score: 8 },
-      
-      // Produção
-      { keywords1: ['producao', 'production', 'leite', 'milk'], keywords2: ['peso', 'weight'], category: 'Produção', score: 8 },
-      { keywords1: ['gordura', 'fat'], keywords2: ['proteina', 'protein'], category: 'Qualidade', score: 7 },
-      
-      // Idade e desenvolvimento
-      { keywords1: ['idade', 'age', 'meses'], keywords2: ['peso', 'weight'], category: 'Desenvolvimento', score: 9 },
-      { keywords1: ['idade', 'age'], keywords2: ['altura', 'height'], category: 'Desenvolvimento', score: 8 },
-    ]
-    
-    /**
-     * Calcular score de relevância biológica para um par de variáveis
-     */
-    const getRelevanceScore = (var1: string, var2: string): { score: number, category: string } => {
-      const v1Lower = var1.toLowerCase()
-      const v2Lower = var2.toLowerCase()
-      
-      for (const pair of biologicalPairs) {
-        const match1 = pair.keywords1.some(k => v1Lower.includes(k) || v2Lower.includes(k))
-        const match2 = pair.keywords2.some(k => v1Lower.includes(k) || v2Lower.includes(k))
-        
-        if (match1 && match2) {
-          return { score: pair.score, category: pair.category }
-        }
-      }
-      
-      // Score padrão para outros pares (menor prioridade)
-      return { score: 1, category: 'Outros' }
-    }
-    
-    for (let i = 0; i < variables.length; i++) {
-      for (let j = i + 1; j < variables.length; j++) {
-        const var1 = variables[i]
-        const var2 = variables[j]
-        
-        // Extrair valores válidos
-        const pairs = rawData.map(row => ({
-          x: parseFloat(row[var1] as string),
-          y: parseFloat(row[var2] as string)
-        })).filter(p => !isNaN(p.x) && !isNaN(p.y))
-        
-        if (pairs.length < 3) continue
-        
-        // Calcular correlação de Pearson
-        const n = pairs.length
-        const sumX = pairs.reduce((sum, p) => sum + p.x, 0)
-        const sumY = pairs.reduce((sum, p) => sum + p.y, 0)
-        const sumXY = pairs.reduce((sum, p) => sum + p.x * p.y, 0)
-        const sumX2 = pairs.reduce((sum, p) => sum + p.x * p.x, 0)
-        const sumY2 = pairs.reduce((sum, p) => sum + p.y * p.y, 0)
-        
-        const numerator = n * sumXY - sumX * sumY
-        const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY))
-        
-        if (denominator === 0) continue
-        
-        const correlation = numerator / denominator
-        
-        // Calcular relevância biológica
-        const { score: relevanceScore, category } = getRelevanceScore(var1, var2)
-        
-        // Filtro mais permissivo: |r| > 0.25 para pares biologicamente relevantes, |r| > 0.4 para outros
-        const threshold = relevanceScore >= 7 ? 0.25 : 0.4
-        
-        if (Math.abs(correlation) > threshold) {
-          correlations.push({ 
-            var1, 
-            var2, 
-            correlation, 
-            data: pairs,
-            relevanceScore,
-            category
-          })
-        }
-      }
-    }
-    
-    // Ordenar por: 1) Relevância biológica, 2) Força da correlação
-    return correlations.sort((a, b) => {
-      // Primeiro por relevância
-      if (b.relevanceScore !== a.relevanceScore) {
-        return b.relevanceScore - a.relevanceScore
-      }
-      // Depois por força da correlação
-      return Math.abs(b.correlation) - Math.abs(a.correlation)
-    })
-  }
 
   if (status === 'loading' || loading) {
     return (
@@ -956,106 +845,133 @@ export default function ResultadosPage() {
                       </div>
                     )}
 
-                    {/* Gráficos de Dispersão - Correlações Significativas */}
-                    {analysisData.numericStats && 
-                     Object.keys(analysisData.numericStats).length >= 2 && 
-                     analysisData.rawData && (() => {
-                        const correlations = calculateCorrelations(analysisData.numericStats, analysisData.rawData)
-                        return correlations.length > 0 ? (
-                          <div className="bg-card shadow rounded-lg p-6">
-                            <div className="flex items-center justify-between mb-4">
-                              <div className="flex items-center">
-                                <GitCompare className="h-5 w-5 text-purple-600 mr-2" />
-                                <div>
-                                  <h3 className="text-lg font-semibold text-foreground">Análise de Correlações Biologicamente Relevantes</h3>
-                                  <p className="text-sm text-muted-foreground">
-                                    Priorizadas por relevância zootécnica • {correlations.length} correlações encontradas
-                                  </p>
+                    {/* Enhanced Correlation Analysis */}
+                    {analysisData.correlations?.report && (() => {
+                        const report = analysisData.correlations.report
+                        const topCorrelations = report.topCorrelations || []
+                        
+                        return topCorrelations.length > 0 ? (
+                          <div className="space-y-6">
+                            {/* Correlation Summary */}
+                            <div className="bg-card shadow rounded-lg p-6">
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center">
+                                  <GitCompare className="h-5 w-5 text-purple-600 mr-2" />
+                                  <div>
+                                    <h3 className="text-lg font-semibold text-foreground">Análise de Correlações Biologicamente Relevantes</h3>
+                                    <p className="text-sm text-muted-foreground">
+                                      Sistema inteligente com priorização por relevância zootécnica
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                            
-                            {/* Legenda de categorias */}
-                            <div className="mb-6 flex flex-wrap gap-2 text-xs">
-                              <span className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">
-                                📈 Crescimento
-                              </span>
-                              <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded">
-                                📏 Morfometria
-                              </span>
-                              <span className="px-2 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded">
-                                ⚡ Performance
-                              </span>
-                              <span className="px-2 py-1 bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 rounded">
-                                🎯 Eficiência
-                              </span>
-                              <span className="px-2 py-1 bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200 rounded">
-                                🥛 Produção
-                              </span>
-                              <span className="px-2 py-1 bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200 rounded">
-                                🧬 Desenvolvimento
-                              </span>
-                            </div>
-                            
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                              {correlations.slice(0, 12).map((corr, idx) => (
-                                <div key={idx} className="space-y-2">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <div className="flex-1">
-                                      <h4 className="font-medium text-sm text-foreground">
-                                        {corr.var1} vs {corr.var2}
-                                      </h4>
-                                      <div className="flex items-center gap-2 mt-1">
-                                        <span className={`px-2 py-0.5 text-xs rounded ${
-                                          corr.category === 'Crescimento' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                                          corr.category === 'Morfometria' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                                          corr.category === 'Performance' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
-                                          corr.category === 'Eficiência' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' :
-                                          corr.category === 'Produção' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200' :
-                                          corr.category === 'Desenvolvimento' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200' :
-                                          'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                                        }`}>
-                                          {corr.category}
-                                        </span>
-                                        <span className="text-xs text-muted-foreground">
-                                          Relevância: {corr.relevanceScore}/10
-                                        </span>
-                                      </div>
-                                    </div>
-                                    <span className={`px-2 py-1 text-xs font-semibold rounded ${
-                                      Math.abs(corr.correlation) > 0.7 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                      Math.abs(corr.correlation) > 0.5 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
-                                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                    }`}>
-                                      r = {corr.correlation.toFixed(3)}
-                                    </span>
+
+                              {/* Statistics Cards */}
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+                                  <div className="text-sm text-blue-600 dark:text-blue-400 mb-1">Total</div>
+                                  <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                                    {report.totalCorrelations}
                                   </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {Math.abs(corr.correlation) > 0.7 ? '🔴 Correlação forte' :
-                                     Math.abs(corr.correlation) > 0.5 ? '🟠 Correlação moderada' :
-                                     Math.abs(corr.correlation) > 0.3 ? '🟡 Correlação fraca positiva' :
-                                     '⚪ Correlação fraca'}
-                                    {corr.correlation > 0 ? ' positiva' : ' negativa'}
-                                  </div>
-                                  <ScatterPlotChart
-                                    data={analysisData.rawData || []}
-                                    xKey={corr.var1}
-                                    yKey={corr.var2}
-                                    title=""
-                                  />
                                 </div>
-                              ))}
+                                <div className="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg">
+                                  <div className="text-sm text-green-600 dark:text-green-400 mb-1">Significativas</div>
+                                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">
+                                    {report.significantCorrelations}
+                                  </div>
+                                </div>
+                                <div className="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg">
+                                  <div className="text-sm text-purple-600 dark:text-purple-400 mb-1">Alta Relevância</div>
+                                  <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                                    {report.highRelevanceCorrelations}
+                                  </div>
+                                </div>
+                                <div className="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-lg">
+                                  <div className="text-sm text-amber-600 dark:text-amber-400 mb-1">Categorias</div>
+                                  <div className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                                    {Object.keys(report.correlationsByCategory || {}).length}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Warnings and Recommendations */}
+                              {report.warnings && report.warnings.length > 0 && (
+                                <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-950/30 border-l-4 border-yellow-500 rounded">
+                                  <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-2">⚠️ Avisos</h4>
+                                  <ul className="space-y-1">
+                                    {report.warnings.map((warning: string, idx: number) => (
+                                      <li key={idx} className="text-sm text-yellow-800 dark:text-yellow-200">{warning}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {report.recommendations && report.recommendations.length > 0 && (
+                                <div className="p-4 bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 rounded">
+                                  <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">💡 Recomendações</h4>
+                                  <ul className="space-y-1">
+                                    {report.recommendations.map((rec: string, idx: number) => (
+                                      <li key={idx} className="text-sm text-blue-800 dark:text-blue-200">{rec}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
                             </div>
-                            {correlations.length > 12 && (
-                              <div className="mt-6 text-center">
-                                <p className="text-sm text-muted-foreground mb-2">
-                                  Mostrando as 12 correlações mais relevantes de {correlations.length} encontradas
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  💡 As correlações são priorizadas por relevância biológica e força estatística
-                                </p>
+
+                            {/* Correlation Matrix Table */}
+                            <div className="bg-card shadow rounded-lg p-6">
+                              <CorrelationMatrix
+                                correlations={topCorrelations}
+                                title="Matriz de Correlações Priorizadas"
+                                maxDisplay={20}
+                              />
+                            </div>
+
+                            {/* Correlation Heatmap */}
+                            {topCorrelations.length >= 3 && (
+                              <div className="bg-card shadow rounded-lg p-6">
+                                <CorrelationHeatmap
+                                  correlations={topCorrelations.map(c => ({
+                                    var1: c.var1,
+                                    var2: c.var2,
+                                    coefficient: c.coefficient,
+                                    significant: c.significant,
+                                    relevanceScore: c.relevanceScore
+                                  }))}
+                                  title="Mapa de Calor das Correlações"
+                                />
                               </div>
                             )}
+
+                            {/* Enhanced Scatter Plots */}
+                            <div className="bg-card shadow rounded-lg p-6">
+                              <h3 className="text-lg font-semibold text-foreground mb-6">
+                                Gráficos de Dispersão com Linha de Tendência
+                              </h3>
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {topCorrelations.slice(0, 12).map((corr, idx) => (
+                                  <EnhancedScatterPlot
+                                    key={idx}
+                                    data={corr.dataPoints}
+                                    xLabel={corr.var1}
+                                    yLabel={corr.var2}
+                                    correlation={corr.coefficient}
+                                    pValue={corr.pValue}
+                                    category={corr.category}
+                                    relevanceScore={corr.relevanceScore}
+                                    title={`${corr.var1} vs ${corr.var2}`}
+                                    showTrendLine={true}
+                                  />
+                                ))}
+                              </div>
+                              {topCorrelations.length > 12 && (
+                                <div className="mt-6 text-center">
+                                  <p className="text-sm text-muted-foreground">
+                                    Mostrando as 12 correlações mais relevantes de {topCorrelations.length} encontradas
+                                  </p>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         ) : null
                       })()
