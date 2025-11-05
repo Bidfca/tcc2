@@ -799,8 +799,8 @@ export default function ResultadosPage() {
 
                         {/* Conclusão */}
                         {diagnostico.conclusao && (
-                          <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg p-4">
-                            <h4 className="font-semibold text-blue-900 mb-2 flex items-center">
+                          <div className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-lg p-4">
+                            <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center">
                               🎓 Conclusão e Perspectivas
                             </h4>
                             <p className="text-foreground leading-relaxed">{diagnostico.conclusao}</p>
