@@ -1,13 +1,14 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getCachedData, setCachedData } from '@/lib/cache'
+import { getPaginationFromRequest, buildPaginatedResponse } from '@/lib/pagination'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
@@ -46,15 +47,29 @@ export async function GET() {
 
     console.log('❌ Cache MISS: Buscando artigos salvos do banco')
 
-    // Buscar artigos salvos do usuário
-    const savedReferences = await prisma.savedReference.findMany({
-      where: {
-        userId: session.user.id
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+    // Get pagination parameters
+    const pagination = getPaginationFromRequest(request)
+    const skip = ((pagination.page || 1) - 1) * (pagination.limit || 20)
+    const take = pagination.limit || 20
+
+    // Buscar artigos salvos do usuário com paginação
+    const [savedReferences, total] = await Promise.all([
+      prisma.savedReference.findMany({
+        where: {
+          userId: session.user.id
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        skip,
+        take
+      }),
+      prisma.savedReference.count({
+        where: {
+          userId: session.user.id
+        }
+      })
+    ])
 
     // Converter para formato esperado pelo frontend
     const articles = savedReferences.map(ref => {
@@ -115,10 +130,12 @@ export async function GET() {
     await setCachedData(cacheKey, resultToCache, 600)
     console.log('💾 Artigos salvos no cache')
 
+    // Build paginated response
+    const paginatedResponse = buildPaginatedResponse(articles, total, pagination)
+
     return NextResponse.json({
       success: true,
-      articles,
-      total: articles.length,
+      ...paginatedResponse,
       cached: false
     })
 

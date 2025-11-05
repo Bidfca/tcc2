@@ -133,24 +133,29 @@ describe('Logger', () => {
   /**
    * Test suite for logger behavior with optional parameters
    * Verifies that additional parameters don't cause errors
+   * 
+   * Note: Logger's isDevelopment is determined at instantiation,
+   * so we use error level which always logs regardless of environment
    */
   describe('Logger behavior', () => {
     /**
      * Test that logger accepts additional data parameter
      */
     it('should accept data parameter', () => {
-      logger.info('Test message', { key: 'value' })
-      // Should not throw error
-      expect(consoleLogSpy).toHaveBeenCalled()
+      // Use error level which always logs
+      logger.error('Test message', { key: 'value' })
+      // Should not throw error and should log
+      expect(consoleErrorSpy).toHaveBeenCalled()
     })
 
     /**
      * Test that logger accepts options parameter
      */
     it('should accept options parameter', () => {
-      logger.success('Success message', undefined, { prefix: 'PREFIX: ' })
-      // Should not throw error
-      expect(consoleLogSpy).toHaveBeenCalled()
+      // Use error level which always logs
+      logger.error('Error message', undefined, { prefix: 'PREFIX: ' })
+      // Should not throw error and should log
+      expect(consoleErrorSpy).toHaveBeenCalled()
     })
   })
 })

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { ErrorHandler, ErrorCodes } from '@/lib/errors'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
+import { withRateLimit } from '@/lib/rate-limit'
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1, 'Token é obrigatório'),
@@ -10,6 +11,10 @@ const resetPasswordSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+  // Apply rate limiting for password reset
+  const rateLimitResponse = await withRateLimit(request, 'AUTH')
+  if (rateLimitResponse) return rateLimitResponse
+  
   try {
     console.log('🔐 Iniciando processo de reset de senha...')
     

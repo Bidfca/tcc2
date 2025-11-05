@@ -17,6 +17,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
+import { getCorsHeaders, handleCorsPreflightRequest } from '@/lib/cors'
 
 /**
  * Main middleware function that processes all incoming requests
@@ -27,11 +28,20 @@ import { getToken } from 'next-auth/jwt'
 export async function middleware(request: NextRequest) {
   // Extract the pathname from the request URL
   const { pathname } = request.nextUrl
+  const origin = request.headers.get('origin')
 
   // Log all requests in development mode for debugging
   // Helps track which routes are being accessed during development
   if (process.env.NODE_ENV === 'development') {
     console.log(`🌐 ${request.method} ${pathname}`)
+  }
+
+  // Handle CORS preflight requests for API routes
+  if (pathname.startsWith('/api/')) {
+    const preflightResponse = handleCorsPreflightRequest(request)
+    if (preflightResponse) {
+      return preflightResponse
+    }
   }
 
   // Authentication check for protected routes
@@ -72,6 +82,14 @@ export async function middleware(request: NextRequest) {
   // Create the response object to pass to the next handler
   const response = NextResponse.next()
   
+  // Apply CORS headers for API routes
+  if (pathname.startsWith('/api/')) {
+    const corsHeaders = getCorsHeaders(origin)
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      response.headers.set(key, value as string)
+    })
+  }
+  
   // Add debug headers in development mode
   // Useful for debugging timing and routing issues
   if (process.env.NODE_ENV === 'development') {
@@ -92,14 +110,13 @@ export const config = {
   matcher: [
     /*
      * Match all request paths EXCEPT:
-     * - /api/* (API routes - they handle their own auth)
      * - /_next/static/* (static files - no auth needed)
      * - /_next/image/* (image optimization - no auth needed)
      * - /favicon.ico (favicon - no auth needed)
      * - /public/* (public assets - no auth needed)
      * 
-     * This ensures middleware only runs on actual page routes that might need protection
+     * Now includes /api/* routes for CORS handling
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
   ],
 }

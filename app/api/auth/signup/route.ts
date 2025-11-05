@@ -38,6 +38,7 @@ import { prisma } from '@/lib/prisma'
 import { ErrorHandler, ErrorCodes } from '@/lib/errors'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
+import { withRateLimit } from '@/lib/rate-limit'
 
 /**
  * Zod validation schema for sign up data
@@ -63,6 +64,10 @@ const signupSchema = z.object({
  * @returns JSON response with created user or error
  */
 export async function POST(request: NextRequest) {
+  // Apply rate limiting for authentication endpoints
+  const rateLimitResponse = await withRateLimit(request, 'AUTH')
+  if (rateLimitResponse) return rateLimitResponse
+  
   try {
     console.log('📝 Iniciando processo de cadastro...')
     

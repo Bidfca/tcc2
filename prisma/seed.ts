@@ -1,14 +1,24 @@
 import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcryptjs'
+import * as bcrypt from 'bcryptjs'
 
-const prisma = new PrismaClient()
+// Use DIRECT_URL for seeding to avoid connection pooling issues
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+    },
+  },
+})
 
 async function main() {
   console.log('🌱 Seeding database...')
+  
+  // Ensure clean connection
+  await prisma.$connect()
 
   // Create admin user
   const adminPassword = await bcrypt.hash('admin123', 12)
-  const admin = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: 'admin@agroinsight.com' },
     update: {},
     create: {
@@ -21,7 +31,7 @@ async function main() {
 
   // Create demo user
   const demoPassword = await bcrypt.hash('demo123', 12)
-  const demo = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: 'demo@agroinsight.com' },
     update: {},
     create: {
@@ -58,7 +68,7 @@ async function main() {
   })
 
   // Create upload presets for the project
-  const uploadPreset = await prisma.projectUploadPreset.upsert({
+  await prisma.projectUploadPreset.upsert({
     where: { id: 'preset-1' },
     update: {},
     create: {
@@ -78,7 +88,11 @@ async function main() {
     },
   })
 
-  // Create validation settings
+  // Create validation settings (delete existing first to avoid duplicates)
+  await prisma.validationSetting.deleteMany({
+    where: { projectId: project.id },
+  })
+  
   await prisma.validationSetting.createMany({
     data: [
       {
@@ -105,20 +119,35 @@ async function main() {
     ],
   })
 
-  // Create project settings
-  await prisma.projectSetting.createMany({
-    data: [
-      {
+  // Create project settings (upsert to handle existing)
+  await prisma.projectSetting.upsert({
+    where: {
+      projectId_key: {
         projectId: project.id,
         key: 'mandatory_review',
-        value: 'true',
       },
-      {
+    },
+    update: {},
+    create: {
+      projectId: project.id,
+      key: 'mandatory_review',
+      value: 'true',
+    },
+  })
+  
+  await prisma.projectSetting.upsert({
+    where: {
+      projectId_key: {
         projectId: project.id,
         key: 'auto_normalize_units',
-        value: 'true',
       },
-    ],
+    },
+    update: {},
+    create: {
+      projectId: project.id,
+      key: 'auto_normalize_units',
+      value: 'true',
+    },
   })
 
   console.log('✅ Database seeded successfully!')

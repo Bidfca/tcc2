@@ -36,6 +36,8 @@ import { prisma } from '@/lib/prisma'
 import Papa from 'papaparse'
 import { analyzeDataset } from '@/lib/dataAnalysis'
 import { invalidateCache } from '@/lib/cache'
+import { withRateLimit } from '@/lib/rate-limit'
+import { validateUploadedFile, generateUniqueFilename } from '@/lib/upload-security'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
@@ -56,6 +58,10 @@ export const dynamic = 'force-dynamic'
  * @returns JSON response with analysis results or error
  */
 export async function POST(request: NextRequest) {
+  // Apply rate limiting for file uploads
+  const rateLimitResponse = await withRateLimit(request, 'UPLOAD')
+  if (rateLimitResponse) return rateLimitResponse
+  
   try {
     const session = await getServerSession(authOptions)
     
@@ -70,9 +76,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Nenhum arquivo enviado' }, { status: 400 })
     }
 
-    if (file.type !== 'text/csv') {
-      return NextResponse.json({ error: 'Apenas arquivos CSV são aceitos' }, { status: 400 })
+    // Security validation
+    const securityCheck = await validateUploadedFile(file, 'csv')
+    if (!securityCheck.valid) {
+      console.warn('🚫 Security check failed:', securityCheck.error)
+      return NextResponse.json({ 
+        error: securityCheck.error,
+        warnings: securityCheck.warnings 
+      }, { status: 400 })
     }
+
+    // Log warnings if any
+    if (securityCheck.warnings && securityCheck.warnings.length > 0) {
+      console.warn('⚠️ Upload warnings:', securityCheck.warnings)
+    }
+
+    // Generate secure filename
+    const secureFilename = generateUniqueFilename(file.name)
 
     // Check file size for streaming decision
     const fileSizeInMB = file.size / (1024 * 1024)
@@ -182,7 +202,7 @@ export async function POST(request: NextRequest) {
     const analysis = await prisma.dataset.create({
       data: {
         name: file.name,
-        filename: file.name,
+        filename: secureFilename,
         projectId: userProject.id,
         status: 'VALIDATED',
         data: JSON.stringify({

@@ -5,8 +5,14 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { ReferenceDataService } from '@/lib/references/species-references'
 import Papa from 'papaparse'
+import { validateUploadedFile, generateUniqueFilename } from '@/lib/upload-security'
+import { withRateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResponse = await withRateLimit(request, 'UPLOAD')
+  if (rateLimitResponse) return rateLimitResponse
+  
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user) {
@@ -25,6 +31,18 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Security validation
+    const securityCheck = await validateUploadedFile(file, 'csv')
+    if (!securityCheck.valid) {
+      console.warn('🚫 Security check failed:', securityCheck.error)
+      return NextResponse.json({ 
+        error: securityCheck.error,
+        warnings: securityCheck.warnings 
+      }, { status: 400 })
+    }
+
+    const secureFilename = generateUniqueFilename(file.name)
 
     console.log('📊 Iniciando análise multi-espécie:', { species, subtype })
 
@@ -102,7 +120,7 @@ export async function POST(request: NextRequest) {
       data: {
         projectId: finalProjectId,
         name: `${species}${subtype ? ` - ${subtype}` : ''} - ${new Date().toLocaleDateString('pt-BR')}`,
-        filename: file.name,
+        filename: secureFilename,
         status: 'VALIDATED',
         data: JSON.stringify({
           raw: parsed.data.slice(0, 100), // Limitar dados brutos para economia de espaço

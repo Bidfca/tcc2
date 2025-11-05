@@ -1,0 +1,432 @@
+openapi: 3.0.0
+info:
+  title: AgroInsight API
+  version: 1.0.0
+  description: |
+    API for agricultural data analysis and zootechnical research platform.
+    
+    Features:
+    - User authentication and authorization
+    - CSV data upload and analysis
+    - Multi-species zootechnical analysis
+    - Scientific references search and management
+    - Project and dataset management
+  contact:
+    name: AgroInsight Support
+    email: support@agroinsight.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development
+  - url: https://agroinsight.vercel.app/api
+    description: Production
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from login endpoint
+      
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+          
+    PaginationMeta:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of items
+        page:
+          type: integer
+          description: Current page number
+        limit:
+          type: integer
+          description: Items per page
+        totalPages:
+          type: integer
+          description: Total number of pages
+        hasNext:
+          type: boolean
+          description: Whether there is a next page
+        hasPrev:
+          type: boolean
+          description: Whether there is a previous page
+          
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [USER, ADMIN]
+        createdAt:
+          type: string
+          format: date-time
+          
+    Article:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        authors:
+          type: array
+          items:
+            type: string
+        year:
+          type: integer
+        abstract:
+          type: string
+        journal:
+          type: string
+        doi:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+        keywords:
+          type: array
+          items:
+            type: string
+        source:
+          type: string
+          enum: [scholar, pubmed, crossref, manual]
+          
+    Dataset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        filename:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, VALIDATED, ERROR]
+        createdAt:
+          type: string
+          format: date-time
+        projectId:
+          type: string
+          format: uuid
+
+paths:
+  /auth/signup:
+    post:
+      summary: Create new user account
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  example: "João Silva"
+                email:
+                  type: string
+                  format: email
+                  example: "joao@example.com"
+                password:
+                  type: string
+                  minLength: 6
+                  example: "senha123"
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Validation error or user exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+              description: Request limit
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+              description: Remaining requests
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry
+              
+  /auth/forgot-password:
+    post:
+      summary: Request password reset
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Reset link sent (always returns success for security)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '429':
+          description: Rate limit exceeded
+          
+  /analise/upload:
+    post:
+      summary: Upload CSV file for analysis
+      tags:
+        - Analysis
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CSV file to analyze (max 10MB)
+      responses:
+        '201':
+          description: Analysis created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  analysis:
+                    $ref: '#/components/schemas/Dataset'
+                  message:
+                    type: string
+        '400':
+          description: Invalid file or validation error
+        '401':
+          description: Unauthorized
+        '429':
+          description: Upload rate limit exceeded
+          
+  /analise/resultados:
+    get:
+      summary: Get analysis results
+      tags:
+        - Analysis
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+          description: Items per page
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+          description: Field to sort by
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order
+      responses:
+        '200':
+          description: Analysis results retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Dataset'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+                  cached:
+                    type: boolean
+        '401':
+          description: Unauthorized
+          
+  /referencias/search:
+    get:
+      summary: Search scientific articles
+      tags:
+        - References
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search query
+        - name: source
+          in: query
+          schema:
+            type: string
+            enum: [all, scholar, pubmed, crossref]
+            default: all
+          description: Source to search
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 20
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  articles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Article'
+                  sources:
+                    type: array
+                    items:
+                      type: string
+                  total:
+                    type: integer
+        '401':
+          description: Unauthorized
+        '429':
+          description: Search rate limit exceeded
+          
+  /referencias/saved:
+    get:
+      summary: Get saved articles
+      tags:
+        - References
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Saved articles retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Article'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+                  cached:
+                    type: boolean
+        '401':
+          description: Unauthorized
+
+tags:
+  - name: Authentication
+    description: User authentication and account management
+  - name: Analysis
+    description: Data analysis and upload endpoints
+  - name: References
+    description: Scientific references search and management

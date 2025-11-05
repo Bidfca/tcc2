@@ -3,12 +3,17 @@ import { prisma } from '@/lib/prisma'
 import { ErrorHandler, ErrorCodes } from '@/lib/errors'
 import { z } from 'zod'
 import { randomBytes } from 'crypto'
+import { withRateLimit } from '@/lib/rate-limit'
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Email inválido'),
 })
 
 export async function POST(request: NextRequest) {
+  // Apply rate limiting - more restrictive for password reset
+  const rateLimitResponse = await withRateLimit(request, 'AUTH')
+  if (rateLimitResponse) return rateLimitResponse
+  
   try {
     console.log('🔐 Iniciando processo de recuperação de senha...')
     
