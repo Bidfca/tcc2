@@ -62,6 +62,14 @@ export function SpeciesUploadForm({
   const handleAnalyze = async () => {
     if (!file) return
 
+    console.log('[analise:start]', {
+      fileName: file.name,
+      fileSize: file.size,
+      species,
+      subtype,
+      timestamp: new Date().toISOString()
+    })
+
     setIsAnalyzing(true)
     const toastId = toast.loading('Analisando arquivo...')
 
@@ -72,22 +80,51 @@ export function SpeciesUploadForm({
     if (projectId) formData.append('projectId', projectId)
 
     try {
+      console.log('[analise:api:request]', { 
+        endpoint: '/api/analysis/multi-species',
+        species,
+        subtype
+      })
+
       const response = await fetch('/api/analysis/multi-species', {
         method: 'POST',
         body: formData
       })
 
+      console.log('[analise:api:response]', {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText
+      })
+
       const result = await response.json()
+
+      console.log('[analise:api:result]', {
+        success: result.success,
+        hasAnalysis: !!result.analysis,
+        analysisId: result.analysis?.id,
+        error: result.error
+      })
 
       if (response.ok && result.success) {
         toast.success('Análise concluída com sucesso!', { id: toastId })
         onAnalysisComplete?.(result)
       } else {
-        throw new Error(result.error || 'Erro na análise')
+        const errorMsg = result.error || 'Erro na análise'
+        console.error('[analise:api:error]', { 
+          status: response.status,
+          error: errorMsg,
+          result
+        })
+        toast.error(errorMsg, { id: toastId })
+        throw new Error(errorMsg)
       }
     } catch (error) {
-      console.error('Erro ao analisar:', error)
-      toast.error('Erro ao processar arquivo', { id: toastId })
+      console.error('[analise:error]', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      })
+      toast.error('Erro ao processar arquivo. Verifique o console para mais detalhes.', { id: toastId })
     } finally {
       setIsAnalyzing(false)
     }

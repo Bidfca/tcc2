@@ -264,6 +264,12 @@ export default function AnaliseDataPage() {
                       species={species}
                       subtype={subtype}
                       onAnalysisComplete={(result) => {
+                        console.log('[analise:complete]', { 
+                          hasAnalysis: !!result.analysis,
+                          analysisId: result.analysis?.id,
+                          timestamp: new Date().toISOString()
+                        })
+                        
                         if (result.analysis) {
                           setAnalysisResult({
                             id: result.analysis.id,
@@ -272,7 +278,16 @@ export default function AnaliseDataPage() {
                             success: true
                           })
                           toast.success('Análise concluída com sucesso!')
+                          
+                          console.log('[analise:redirect]', { 
+                            analysisId: result.analysis.id,
+                            targetUrl: `/dashboard/resultados?id=${result.analysis.id}`
+                          })
+                          
                           router.push(`/dashboard/resultados?id=${result.analysis.id}`)
+                        } else {
+                          console.error('[analise:complete:no-analysis]', { result })
+                          toast.error('Erro: análise não retornou dados')
                         }
                       }}
                     />
