@@ -11,13 +11,27 @@ datasource db {
   directUrl = env("DIRECT_URL") // Para migrations na Vercel
 }
 
+/// EN: User account model for authentication and authorization
+/// PT-BR: Modelo de conta de usuário para autenticação e autorização
 model User {
   id                String    @id @default(cuid())
+  /// EN: Unique email address for login
+  /// PT-BR: Endereço de email único para login
   email             String    @unique
+  /// EN: User's display name (optional)
+  /// PT-BR: Nome de exibição do usuário (opcional)
   name              String?
+  /// EN: Hashed password using bcrypt
+  /// PT-BR: Senha criptografada usando bcrypt
   password          String
-  role              String    @default("USER") // USER or ADMIN
+  /// EN: User role: USER (default) or ADMIN
+  /// PT-BR: Papel do usuário: USER (padrão) ou ADMIN
+  role              String    @default("USER")
+  /// EN: Token for password reset (unique, temporary)
+  /// PT-BR: Token para redefinição de senha (único, temporário)
   resetToken        String?   @unique
+  /// EN: Expiration timestamp for reset token
+  /// PT-BR: Timestamp de expiração do token de redefinição
   resetTokenExpiry  DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -32,10 +46,18 @@ model User {
   @@map("users")
 }
 
+/// EN: Project model - organizational unit for grouping datasets and analysis
+/// PT-BR: Modelo de projeto - unidade organizacional para agrupar conjuntos de dados e análises
 model Project {
   id          String   @id @default(cuid())
+  /// EN: Project name
+  /// PT-BR: Nome do projeto
   name        String
+  /// EN: Optional project description
+  /// PT-BR: Descrição opcional do projeto
   description String?
+  /// EN: User ID of the project owner
+  /// PT-BR: ID do usuário proprietário do projeto
   ownerId     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -53,11 +75,19 @@ model Project {
   @@map("projects")
 }
 
+/// EN: Upload preset configuration for automated data processing workflows
+/// PT-BR: Configuração de preset de upload para fluxos de trabalho automatizados de processamento de dados
 model ProjectUploadPreset {
   id                    String   @id @default(cuid())
   projectId             String
-  intervals             String   // Store bovine intervals as JSON string
-  defaultFieldMappings  String   // Store field mappings as JSON string
+  /// EN: Bovine intervals stored as JSON string
+  /// PT-BR: Intervalos bovinos armazenados como string JSON
+  intervals             String
+  /// EN: Default field mappings stored as JSON string
+  /// PT-BR: Mapeamentos de campo padrão armazenados como string JSON
+  defaultFieldMappings  String
+  /// EN: Whether manual review is required after upload
+  /// PT-BR: Se revisão manual é necessária após o upload
   reviewRequired        Boolean  @default(true)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -69,28 +99,58 @@ model ProjectUploadPreset {
   @@map("project_upload_presets")
 }
 
+/// EN: Dataset model - stores uploaded agricultural data files with metadata and analysis results
+/// PT-BR: Modelo de conjunto de dados - armazena arquivos de dados agrícolas carregados com metadados e resultados de análise
 model Dataset {
   id          String   @id @default(cuid())
   projectId   String
+  /// EN: Dataset display name
+  /// PT-BR: Nome de exibição do conjunto de dados
   name        String
+  /// EN: Original uploaded filename
+  /// PT-BR: Nome do arquivo original carregado
   filename    String
-  status      String   @default("UPLOADED") // UPLOADED, PROCESSING, VALIDATED, APPROVED, REJECTED
-  data        String   // Store processed data as JSON string
-  metadata    String?  // Store metadata about the dataset as JSON string
+  /// EN: Processing status: UPLOADED, PROCESSING, VALIDATED, APPROVED, REJECTED
+  /// PT-BR: Status de processamento: UPLOADED, PROCESSING, VALIDATED, APPROVED, REJECTED
+  status      String   @default("UPLOADED")
+  /// EN: Processed data stored as JSON string (sample of rows with statistics)
+  /// PT-BR: Dados processados armazenados como string JSON (amostra de linhas com estatísticas)
+  data        String
+  /// EN: Metadata about the dataset stored as JSON string (columns, types, quality metrics)
+  /// PT-BR: Metadados sobre o conjunto de dados armazenados como string JSON (colunas, tipos, métricas de qualidade)
+  metadata    String?
   
-  // Novos campos temporais
-  measurementDate  DateTime?  // Data da medição
-  startDate        DateTime?  // Data inicial do período
-  endDate          DateTime?  // Data final do período
+  // Temporal fields / Campos temporais
+  /// EN: Measurement date for the data collection
+  /// PT-BR: Data de medição para a coleta de dados
+  measurementDate  DateTime?
+  /// EN: Start date of the measurement period
+  /// PT-BR: Data inicial do período de medição
+  startDate        DateTime?
+  /// EN: End date of the measurement period
+  /// PT-BR: Data final do período de medição
+  endDate          DateTime?
   
-  // Novos campos contextuais
-  farmLocation     String?   // JSON: {state, municipality, lat, lon}
-  environmentData  String?   // JSON: {temperature, humidity, thi, etc}
-  productionSystem String?   // intensivo, semi-intensivo, extensivo
+  // Contextual fields / Campos contextuais
+  /// EN: Farm location as JSON: {state, municipality, lat, lon}
+  /// PT-BR: Localização da fazenda como JSON: {state, municipality, lat, lon}
+  farmLocation     String?
+  /// EN: Environmental data as JSON: {temperature, humidity, thi, etc}
+  /// PT-BR: Dados ambientais como JSON: {temperature, humidity, thi, etc}
+  environmentData  String?
+  /// EN: Production system type: intensivo, semi-intensivo, extensivo
+  /// PT-BR: Tipo de sistema de produção: intensivo, semi-intensivo, extensivo
+  productionSystem String?
   
-  // Metadados de qualidade
+  // Quality metadata / Metadados de qualidade
+  /// EN: Data quality score (0-1 scale)
+  /// PT-BR: Pontuação de qualidade dos dados (escala 0-1)
   dataQualityScore Float?
+  /// EN: Whether dataset contains temporal/time-series data
+  /// PT-BR: Se o conjunto de dados contém dados temporais/séries temporais
   hasTemporalData  Boolean   @default(false)
+  /// EN: Whether dataset contains environmental context data
+  /// PT-BR: Se o conjunto de dados contém dados de contexto ambiental
   hasEnvironmental Boolean   @default(false)
   
   createdAt   DateTime @default(now())
@@ -111,12 +171,22 @@ model Dataset {
   @@map("datasets")
 }
 
+/// EN: Field mapping model - transforms source fields to standardized target fields with unit conversion
+/// PT-BR: Modelo de mapeamento de campo - transforma campos de origem para campos de destino padronizados com conversão de unidade
 model DataMapping {
   id          String   @id @default(cuid())
   datasetId   String
+  /// EN: Original field name from uploaded file
+  /// PT-BR: Nome do campo original do arquivo carregado
   sourceField String
+  /// EN: Standardized target field name
+  /// PT-BR: Nome do campo de destino padronizado
   targetField String
+  /// EN: Original unit of measurement
+  /// PT-BR: Unidade de medida original
   unitFrom    String?
+  /// EN: Target unit after conversion
+  /// PT-BR: Unidade de destino após conversão
   unitTo      String?
   createdAt   DateTime @default(now())
 
@@ -128,13 +198,25 @@ model DataMapping {
   @@map("data_mappings")
 }
 
+/// EN: Data validation record - tracks validation rule execution results for dataset fields
+/// PT-BR: Registro de validação de dados - rastreia resultados de execução de regras de validação para campos de conjunto de dados
 model DataValidation {
   id          String   @id @default(cuid())
   datasetId   String
+  /// EN: Field name being validated
+  /// PT-BR: Nome do campo sendo validado
   field       String
-  rule        String   // REQUIRED, MIN_VALUE, MAX_VALUE, RANGE, PATTERN, CUSTOM
+  /// EN: Validation rule type: REQUIRED, MIN_VALUE, MAX_VALUE, RANGE, PATTERN, CUSTOM
+  /// PT-BR: Tipo de regra de validação: REQUIRED, MIN_VALUE, MAX_VALUE, RANGE, PATTERN, CUSTOM
+  rule        String
+  /// EN: Expected value or threshold for the rule
+  /// PT-BR: Valor esperado ou limite para a regra
   value       String?
-  status      String   @default("PENDING") // PENDING, PASSED, FAILED, REVIEWED
+  /// EN: Validation status: PENDING, PASSED, FAILED, REVIEWED
+  /// PT-BR: Status de validação: PENDING, PASSED, FAILED, REVIEWED
+  status      String   @default("PENDING")
+  /// EN: Validation message or error description
+  /// PT-BR: Mensagem de validação ou descrição de erro
   message     String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -148,12 +230,22 @@ model DataValidation {
   @@map("data_validations")
 }
 
+/// EN: Validation setting - defines validation rules to be applied to project datasets
+/// PT-BR: Configuração de validação - define regras de validação a serem aplicadas aos conjuntos de dados do projeto
 model ValidationSetting {
   id        String   @id @default(cuid())
   projectId String
+  /// EN: Field name to validate
+  /// PT-BR: Nome do campo a validar
   field     String
-  rule      String   // REQUIRED, MIN_VALUE, MAX_VALUE, RANGE, PATTERN, CUSTOM
+  /// EN: Validation rule type: REQUIRED, MIN_VALUE, MAX_VALUE, RANGE, PATTERN, CUSTOM
+  /// PT-BR: Tipo de regra de validação: REQUIRED, MIN_VALUE, MAX_VALUE, RANGE, PATTERN, CUSTOM
+  rule      String
+  /// EN: Rule parameter value
+  /// PT-BR: Valor do parâmetro da regra
   value     String
+  /// EN: Whether this validation rule is active
+  /// PT-BR: Se esta regra de validação está ativa
   enabled   Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -166,10 +258,16 @@ model ValidationSetting {
   @@map("validation_settings")
 }
 
+/// EN: Project setting - key-value configuration storage for project-specific settings
+/// PT-BR: Configuração de projeto - armazenamento de configuração chave-valor para configurações específicas do projeto
 model ProjectSetting {
   id        String   @id @default(cuid())
   projectId String
+  /// EN: Setting key name
+  /// PT-BR: Nome da chave de configuração
   key       String
+  /// EN: Setting value
+  /// PT-BR: Valor da configuração
   value     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -181,43 +279,85 @@ model ProjectSetting {
   @@map("project_settings")
 }
 
+/// EN: Saved scientific reference - stores academic articles and papers saved by users
+/// PT-BR: Referência científica salva - armazena artigos acadêmicos e papers salvos pelos usuários
 model SavedReference {
   id              String   @id @default(cuid())
   userId          String
   
-  // Metadados básicos
+  // Basic metadata / Metadados básicos
+  /// EN: Article title
+  /// PT-BR: Título do artigo
   title           String
+  /// EN: Article URL
+  /// PT-BR: URL do artigo
   url             String?
-  doi             String?  // Digital Object Identifier
-  abstract        String?  // SQLite não precisa de @db.Text
+  /// EN: Digital Object Identifier (DOI)
+  /// PT-BR: Identificador de Objeto Digital (DOI)
+  doi             String?
+  /// EN: Article abstract
+  /// PT-BR: Resumo do artigo
+  abstract        String?
   
-  // Autores e publicação
-  authors         String   // JSON array: [{name, affiliation}]
+  // Authors and publication / Autores e publicação
+  /// EN: Authors as JSON array: [{name, affiliation}]
+  /// PT-BR: Autores como array JSON: [{name, affiliation}]
+  authors         String
+  /// EN: Publication year
+  /// PT-BR: Ano de publicação
   year            Int?
+  /// EN: Publication date
+  /// PT-BR: Data de publicação
   publishedDate   DateTime?
-  language        String?  // pt, en, es
+  /// EN: Article language: pt, en, es
+  /// PT-BR: Idioma do artigo: pt, en, es
+  language        String?
   
-  // Journal/Revista
+  // Journal information / Informações da revista
+  /// EN: Journal name
+  /// PT-BR: Nome da revista
   journal         String?
-  issn            String?  // International Standard Serial Number
+  /// EN: International Standard Serial Number (ISSN)
+  /// PT-BR: Número Internacional Normalizado para Publicações Seriadas (ISSN)
+  issn            String?
+  /// EN: Journal volume
+  /// PT-BR: Volume da revista
   volume          String?
+  /// EN: Journal issue
+  /// PT-BR: Edição da revista
   issue           String?
-  pages           String?  // Ex: "123-145"
+  /// EN: Page range (e.g., "123-145")
+  /// PT-BR: Intervalo de páginas (ex: "123-145")
+  pages           String?
   
-  // Categorização
-  keywords        String?  // JSON array de keywords
-  tags            String   // User tags (comma-separated)
+  // Categorization / Categorização
+  /// EN: Keywords as JSON array
+  /// PT-BR: Palavras-chave como array JSON
+  keywords        String?
+  /// EN: User-defined tags (comma-separated)
+  /// PT-BR: Tags definidas pelo usuário (separadas por vírgula)
+  tags            String
   
-  // Source e URLs
-  source          String   @default("manual") // scielo, crossref, pubmed, manual
+  // Source and URLs / Fonte e URLs
+  /// EN: Source: scielo, crossref, pubmed, manual
+  /// PT-BR: Fonte: scielo, crossref, pubmed, manual
+  source          String   @default("manual")
+  /// EN: PDF download URL
+  /// PT-BR: URL de download do PDF
   pdfUrl          String?
   
-  // Métricas e sincronização
+  // Metrics and synchronization / Métricas e sincronização
+  /// EN: Number of citations
+  /// PT-BR: Número de citações
   citationsCount  Int?     @default(0)
+  /// EN: Last synchronization timestamp
+  /// PT-BR: Timestamp da última sincronização
   lastSyncedAt    DateTime?
   
-  // Conteúdo legado (manter compatibilidade)
-  content         String?  // SQLite não precisa de @db.Text
+  // Legacy content / Conteúdo legado
+  /// EN: Legacy content field (for backward compatibility)
+  /// PT-BR: Campo de conteúdo legado (para compatibilidade retroativa)
+  content         String?
   
   // Timestamps
   createdAt       DateTime @default(now())
@@ -232,13 +372,23 @@ model SavedReference {
   @@map("saved_references")
 }
 
+/// EN: Audit log - tracks all user actions for security and compliance
+/// PT-BR: Log de auditoria - rastreia todas as ações do usuário para segurança e conformidade
 model AuditLog {
   id        String   @id @default(cuid())
   userId    String
-  action    String   // CREATE, UPDATE, DELETE, APPROVE, REJECT
-  resource  String   // e.g., "project_upload_presets"
+  /// EN: Action type: CREATE, UPDATE, DELETE, APPROVE, REJECT
+  /// PT-BR: Tipo de ação: CREATE, UPDATE, DELETE, APPROVE, REJECT
+  action    String
+  /// EN: Resource type (e.g., "project_upload_presets", "datasets")
+  /// PT-BR: Tipo de recurso (ex: "project_upload_presets", "datasets")
+  resource  String
+  /// EN: ID of the affected resource
+  /// PT-BR: ID do recurso afetado
   resourceId String
-  changes   String?  // Store the changes made as JSON string
+  /// EN: Changes made stored as JSON string
+  /// PT-BR: Mudanças realizadas armazenadas como string JSON
+  changes   String?
   createdAt DateTime @default(now())
 
   // Relations
@@ -254,11 +404,21 @@ model AuditLog {
 }
 
 // ==================== MULTI-SPECIES MODELS ====================
+// EN: Core models for multi-species livestock analysis system
+// PT-BR: Modelos principais para sistema de análise zootécnica multi-espécies
 
+/// EN: Animal species - top-level species categories for zootechnical analysis
+/// PT-BR: Espécie animal - categorias de espécies de nível superior para análise zootécnica
 model AnimalSpecies {
   id            String   @id @default(cuid())
-  code          String   @unique // 'bovine','swine','poultry','sheep','goat','forage','aquaculture'
-  name          String   // 'Bovinos','Suínos','Aves','Ovinos','Caprinos','Forragem','Piscicultura'
+  /// EN: Species code: 'bovine', 'swine', 'poultry', 'sheep', 'goat', 'forage', 'aquaculture'
+  /// PT-BR: Código da espécie: 'bovine', 'swine', 'poultry', 'sheep', 'goat', 'forage', 'aquaculture'
+  code          String   @unique
+  /// EN: Species display name: 'Bovinos', 'Suínos', 'Aves', 'Ovinos', 'Caprinos', 'Forragem', 'Piscicultura'
+  /// PT-BR: Nome de exibição da espécie: 'Bovinos', 'Suínos', 'Aves', 'Ovinos', 'Caprinos', 'Forragem', 'Piscicultura'
+  name          String
+  /// EN: Whether this species has subtypes (e.g., dairy/beef for bovine)
+  /// PT-BR: Se esta espécie tem subtipos (ex: leite/corte para bovinos)
   hasSubtypes   Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -270,12 +430,20 @@ model AnimalSpecies {
   @@map("animal_species")
 }
 
+/// EN: Animal subtype - species subcategories for more specific analysis (e.g., dairy vs beef cattle)
+/// PT-BR: Subtipo animal - subcategorias de espécies para análise mais específica (ex: gado leiteiro vs corte)
 model AnimalSubtype {
   id          String   @id @default(cuid())
   speciesId   String
-  code        String   // 'dairy','beef','broiler','layer','nursery','finishing'
-  name        String   // 'Leite','Corte','Frango de Corte','Poedeiras','Creche','Terminação'
-  description String?  // Descrição opcional do subtipo
+  /// EN: Subtype code: 'dairy', 'beef', 'broiler', 'layer', 'nursery', 'finishing'
+  /// PT-BR: Código do subtipo: 'dairy', 'beef', 'broiler', 'layer', 'nursery', 'finishing'
+  code        String
+  /// EN: Subtype display name: 'Leite', 'Corte', 'Frango de Corte', 'Poedeiras', 'Creche', 'Terminação'
+  /// PT-BR: Nome de exibição do subtipo: 'Leite', 'Corte', 'Frango de Corte', 'Poedeiras', 'Creche', 'Terminação'
+  name        String
+  /// EN: Optional subtype description
+  /// PT-BR: Descrição opcional do subtipo
+  description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -284,23 +452,45 @@ model AnimalSubtype {
   references  ReferenceData[]
   
   @@index([speciesId])
-  @@unique([speciesId, code]) // Código único por espécie
+  @@unique([speciesId, code])
   @@map("animal_subtypes")
 }
 
+/// EN: Reference data - scientific benchmark values from NRC and EMBRAPA for validating metrics
+/// PT-BR: Dados de referência - valores de referência científica do NRC e EMBRAPA para validação de métricas
 model ReferenceData {
   id            String   @id @default(cuid())
   speciesId     String
   subtypeId     String?
-  metric        String   // 'gpd','peso_nascimento','producao_leite','conversao_alimentar'
+  /// EN: Metric name: 'gpd', 'peso_nascimento', 'producao_leite', 'conversao_alimentar'
+  /// PT-BR: Nome da métrica: 'gpd', 'peso_nascimento', 'producao_leite', 'conversao_alimentar'
+  metric        String
+  /// EN: Minimum acceptable value
+  /// PT-BR: Valor mínimo aceitável
   minValue      Float
+  /// EN: Ideal minimum value (optimal range start)
+  /// PT-BR: Valor mínimo ideal (início da faixa ótima)
   idealMinValue Float?
+  /// EN: Ideal maximum value (optimal range end)
+  /// PT-BR: Valor máximo ideal (fim da faixa ótima)
   idealMaxValue Float?
+  /// EN: Maximum acceptable value
+  /// PT-BR: Valor máximo aceitável
   maxValue      Float
-  unit          String   // 'kg','%','g/dia','L/dia','kg/kg'
-  source        String   // 'NRC 2016','EMBRAPA 2023','Literatura'
-  description   String?  // Descrição ou observações sobre a métrica
+  /// EN: Unit of measurement: 'kg', '%', 'g/dia', 'L/dia', 'kg/kg'
+  /// PT-BR: Unidade de medida: 'kg', '%', 'g/dia', 'L/dia', 'kg/kg'
+  unit          String
+  /// EN: Data source: 'NRC 2016', 'EMBRAPA 2023', 'Literatura'
+  /// PT-BR: Fonte dos dados: 'NRC 2016', 'EMBRAPA 2023', 'Literatura'
+  source        String
+  /// EN: Description or observations about the metric
+  /// PT-BR: Descrição ou observações sobre a métrica
+  description   String?
+  /// EN: Start date for reference validity
+  /// PT-BR: Data de início da validade da referência
   validFrom     DateTime @default(now())
+  /// EN: End date for reference validity (null = always valid)
+  /// PT-BR: Data de fim da validade da referência (null = sempre válida)
   validUntil    DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -311,41 +501,79 @@ model ReferenceData {
   
   @@index([speciesId, metric])
   @@index([subtypeId, metric])
-  @@unique([speciesId, subtypeId, metric]) // Métrica única por espécie/subtipo
+  @@unique([speciesId, subtypeId, metric])
   @@map("reference_data")
 }
 
+/// EN: Forage reference - pasture and forage quality benchmarks with seasonal variations
+/// PT-BR: Referência de forragem - referências de qualidade de pastagem e forragem com variações sazonais
 model ForageReference {
   id          String   @id @default(cuid())
-  forageType  String   // 'brachiaria_brizantha','brachiaria_decumbens','panicum_maximum'
-  variety     String?  // 'marandu','xaraes','mombaca','tanzania'
-  metric      String   // 'biomassa_seca','proteina_bruta','fdn','fda','digestibilidade'
+  /// EN: Forage type: 'brachiaria_brizantha', 'brachiaria_decumbens', 'panicum_maximum'
+  /// PT-BR: Tipo de forragem: 'brachiaria_brizantha', 'brachiaria_decumbens', 'panicum_maximum'
+  forageType  String
+  /// EN: Forage variety: 'marandu', 'xaraes', 'mombaca', 'tanzania'
+  /// PT-BR: Variedade de forragem: 'marandu', 'xaraes', 'mombaca', 'tanzania'
+  variety     String?
+  /// EN: Metric name: 'biomassa_seca', 'proteina_bruta', 'fdn', 'fda', 'digestibilidade'
+  /// PT-BR: Nome da métrica: 'biomassa_seca', 'proteina_bruta', 'fdn', 'fda', 'digestibilidade'
+  metric      String
+  /// EN: Minimum acceptable value
+  /// PT-BR: Valor mínimo aceitável
   minValue    Float
+  /// EN: Ideal target value
+  /// PT-BR: Valor ideal alvo
   idealValue  Float
+  /// EN: Maximum acceptable value
+  /// PT-BR: Valor máximo aceitável
   maxValue    Float
-  unit        String   // 'kg/ha','%','cm'
-  season      String?  // 'aguas','seca','transicao'
-  source      String   // 'EMBRAPA Gado de Corte 2023'
-  description String?  // Descrição ou condições específicas
+  /// EN: Unit of measurement: 'kg/ha', '%', 'cm'
+  /// PT-BR: Unidade de medida: 'kg/ha', '%', 'cm'
+  unit        String
+  /// EN: Season: 'aguas' (rainy), 'seca' (dry), 'transicao' (transition)
+  /// PT-BR: Estação: 'aguas' (chuvosa), 'seca', 'transicao'
+  season      String?
+  /// EN: Data source: 'EMBRAPA Gado de Corte 2023'
+  /// PT-BR: Fonte dos dados: 'EMBRAPA Gado de Corte 2023'
+  source      String
+  /// EN: Description or specific conditions
+  /// PT-BR: Descrição ou condições específicas
+  description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
   @@index([forageType, metric])
   @@index([season])
-  @@unique([forageType, variety, metric, season]) // Combinação única
+  @@unique([forageType, variety, metric, season])
   @@map("forage_references")
 }
 
+/// EN: Time series data - temporal measurements for tracking metrics over time
+/// PT-BR: Dados de série temporal - medições temporais para rastreamento de métricas ao longo do tempo
 model TimeSeriesData {
   id          String   @id @default(cuid())
   datasetId   String
+  /// EN: Measurement timestamp
+  /// PT-BR: Timestamp da medição
   timestamp   DateTime
-  metric      String   // Nome da métrica (gpd, peso, consumo, etc)
+  /// EN: Metric name (gpd, peso, consumo, etc)
+  /// PT-BR: Nome da métrica (gpd, peso, consumo, etc)
+  metric      String
+  /// EN: Measured value
+  /// PT-BR: Valor medido
   value       Float
+  /// EN: Unit of measurement
+  /// PT-BR: Unidade de medida
   unit        String?
-  animalId    String?  // Identificador do animal (se aplicável)
-  lotId       String?  // Identificador do lote
-  metadata    String?  // JSON com dados contextuais adicionais
+  /// EN: Animal identifier (if applicable)
+  /// PT-BR: Identificador do animal (se aplicável)
+  animalId    String?
+  /// EN: Lot/batch identifier
+  /// PT-BR: Identificador do lote
+  lotId       String?
+  /// EN: Additional contextual data as JSON
+  /// PT-BR: Dados contextuais adicionais como JSON
+  metadata    String?
   createdAt   DateTime @default(now())
   
   // Relations

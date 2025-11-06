@@ -1,7 +1,22 @@
+/**
+ * EN: Species Reference Data Service - Unified access to NRC and EMBRAPA scientific references
+ * PT-BR: Serviço de Dados de Referência de Espécies - Acesso unificado a referências científicas NRC e EMBRAPA
+ * 
+ * EN: This service provides species-specific and subtype-specific reference data for validating
+ *     zootechnical metrics against scientific standards from NRC (National Research Council) and
+ *     EMBRAPA (Brazilian Agricultural Research Corporation).
+ * PT-BR: Este serviço fornece dados de referência específicos de espécie e subtipo para validar
+ *        métricas zootécnicas contra padrões científicos do NRC (National Research Council) e
+ *        EMBRAPA (Empresa Brasileira de Pesquisa Agropecuária).
+ */
 // lib/references/species-references.ts
 import { NRC_REFERENCES } from './nrc-data'
 import { EMBRAPA_REFERENCES } from './embrapa-data'
 
+/**
+ * EN: Reference metric interface with min/ideal/max ranges
+ * PT-BR: Interface de métrica de referência com faixas min/ideal/max
+ */
 export interface ReferenceMetric {
   min: number
   ideal_min?: number
@@ -12,9 +27,19 @@ export interface ReferenceMetric {
   source: string
 }
 
+/**
+ * EN: Static service class for accessing species reference data
+ * PT-BR: Classe de serviço estática para acessar dados de referência de espécies
+ */
 export class ReferenceDataService {
   /**
-   * Busca dados de referência combinando NRC e EMBRAPA
+   * EN: Get reference data combining NRC and EMBRAPA sources (prioritizes EMBRAPA for Brazilian context)
+   * PT-BR: Buscar dados de referência combinando fontes NRC e EMBRAPA (prioriza EMBRAPA para contexto brasileiro)
+   * 
+   * @param species - EN: Species code (bovine, swine, poultry, etc.) | PT-BR: Código da espécie (bovine, swine, poultry, etc.)
+   * @param subtype - EN: Optional subtype (dairy, beef, broiler, etc.) | PT-BR: Subtipo opcional (dairy, beef, broiler, etc.)
+   * @param metric - EN: Optional specific metric name | PT-BR: Nome de métrica específica opcional
+   * @returns EN: Reference data object or null if not found | PT-BR: Objeto de dados de referência ou null se não encontrado
    */
   static getReference(
     species: string, 
@@ -145,7 +170,17 @@ export class ReferenceDataService {
   }
   
   /**
-   * Valida se um valor está dentro dos parâmetros de referência
+   * EN: Validate if a value is within reference parameters
+   * PT-BR: Validar se um valor está dentro dos parâmetros de referência
+   * 
+   * EN: Compares a metric value against species-specific reference ranges and returns validation status
+   * PT-BR: Compara um valor de métrica contra faixas de referência específicas da espécie e retorna status de validação
+   * 
+   * @param value - EN: Measured value to validate | PT-BR: Valor medido para validar
+   * @param species - EN: Species code | PT-BR: Código da espécie
+   * @param metric - EN: Metric name | PT-BR: Nome da métrica
+   * @param subtype - EN: Optional subtype | PT-BR: Subtipo opcional
+   * @returns EN: Validation result with status and message | PT-BR: Resultado da validação com status e mensagem
    */
   static validateMetric(
     value: number, 
@@ -268,7 +303,16 @@ export class ReferenceDataService {
   }
   
   /**
-   * Compara múltiplas métricas com referências
+   * EN: Compare multiple metrics against references and generate summary
+   * PT-BR: Comparar múltiplas métricas com referências e gerar resumo
+   * 
+   * EN: Validates multiple metrics at once and provides an overall status summary
+   * PT-BR: Valida múltiplas métricas de uma vez e fornece um resumo de status geral
+   * 
+   * @param data - EN: Object with metric names and values | PT-BR: Objeto com nomes de métricas e valores
+   * @param species - EN: Species code | PT-BR: Código da espécie
+   * @param subtype - EN: Optional subtype | PT-BR: Subtipo opcional
+   * @returns EN: Comparison results with overall status | PT-BR: Resultados de comparação com status geral
    */
   static compareMultipleMetrics(
     data: Record<string, number>,

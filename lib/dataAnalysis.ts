@@ -1,11 +1,24 @@
-// Tipos de variáveis
+/**
+ * EN: Data Analysis Library - Statistical analysis and variable type detection for zootechnical data
+ * PT-BR: Biblioteca de Análise de Dados - Análise estatística e detecção de tipo de variável para dados zootécnicos
+ * 
+ * EN: This module provides comprehensive statistical analysis functions for agricultural datasets,
+ *     including automatic variable type detection, descriptive statistics, and zootechnical variable identification.
+ * PT-BR: Este módulo fornece funções abrangentes de análise estatística para conjuntos de dados agrícolas,
+ *        incluindo detecção automática de tipo de variável, estatísticas descritivas e identificação de variáveis zootécnicas.
+ */
+
+/**
+ * EN: Variable type enumeration for classification
+ * PT-BR: Enumeração de tipo de variável para classificação
+ */
 export enum VariableType {
-  QUANTITATIVE_CONTINUOUS = 'QUANTITATIVE_CONTINUOUS', // Valores numéricos contínuos (peso, altura)
-  QUANTITATIVE_DISCRETE = 'QUANTITATIVE_DISCRETE',     // Valores numéricos discretos (contagem)
-  QUALITATIVE_NOMINAL = 'QUALITATIVE_NOMINAL',         // Categóricos sem ordem (raça, sexo)
-  QUALITATIVE_ORDINAL = 'QUALITATIVE_ORDINAL',         // Categóricos com ordem (escore)
-  TEMPORAL = 'TEMPORAL',                               // Data/tempo
-  IDENTIFIER = 'IDENTIFIER'                            // IDs, códigos
+  QUANTITATIVE_CONTINUOUS = 'QUANTITATIVE_CONTINUOUS', // EN: Continuous numeric values (weight, height) | PT-BR: Valores numéricos contínuos (peso, altura)
+  QUANTITATIVE_DISCRETE = 'QUANTITATIVE_DISCRETE',     // EN: Discrete numeric values (count) | PT-BR: Valores numéricos discretos (contagem)
+  QUALITATIVE_NOMINAL = 'QUALITATIVE_NOMINAL',         // EN: Categorical without order (breed, sex) | PT-BR: Categóricos sem ordem (raça, sexo)
+  QUALITATIVE_ORDINAL = 'QUALITATIVE_ORDINAL',         // EN: Categorical with order (score) | PT-BR: Categóricos com ordem (escore)
+  TEMPORAL = 'TEMPORAL',                               // EN: Date/time | PT-BR: Data/tempo
+  IDENTIFIER = 'IDENTIFIER'                            // EN: IDs, codes | PT-BR: IDs, códigos
 }
 
 export interface VariableInfo {
@@ -99,7 +112,17 @@ const ZOOTECHNICAL_KEYWORDS = {
 }
 
 /**
- * Detecta o tipo de variável baseado nos dados
+ * EN: Detect variable type based on column name and data values
+ * PT-BR: Detectar tipo de variável baseado no nome da coluna e valores de dados
+ * 
+ * EN: Uses heuristics to classify variables as quantitative, qualitative, temporal, or identifier.
+ *     Also identifies zootechnical variables using keyword matching.
+ * PT-BR: Usa heurísticas para classificar variáveis como quantitativas, qualitativas, temporais ou identificador.
+ *        Também identifica variáveis zootécnicas usando correspondência de palavras-chave.
+ * 
+ * @param columnName - EN: Column header name | PT-BR: Nome do cabeçalho da coluna
+ * @param values - EN: Array of column values | PT-BR: Array de valores da coluna
+ * @returns EN: Variable information with type and metadata | PT-BR: Informações da variável com tipo e metadados
  */
 export function detectVariableType(
   columnName: string,
@@ -193,7 +216,14 @@ export function detectVariableType(
 }
 
 /**
- * Calcula estatísticas descritivas para variáveis numéricas
+ * EN: Calculate descriptive statistics for numeric variables
+ * PT-BR: Calcular estatísticas descritivas para variáveis numéricas
+ * 
+ * EN: Computes mean, median, mode, standard deviation, quartiles, outliers, and other statistics
+ * PT-BR: Calcula média, mediana, moda, desvio padrão, quartis, outliers e outras estatísticas
+ * 
+ * @param values - EN: Array of numeric values | PT-BR: Array de valores numéricos
+ * @returns EN: Comprehensive numeric statistics | PT-BR: Estatísticas numéricas abrangentes
  */
 export function calculateNumericStats(values: unknown[]): NumericStats {
   const numericValues = values
@@ -277,7 +307,14 @@ export function calculateNumericStats(values: unknown[]): NumericStats {
 }
 
 /**
- * Calcula estatísticas para variáveis categóricas
+ * EN: Calculate statistics for categorical variables
+ * PT-BR: Calcular estatísticas para variáveis categóricas
+ * 
+ * EN: Computes frequency distributions, entropy, and identifies most/least common values
+ * PT-BR: Calcula distribuições de frequência, entropia e identifica valores mais/menos comuns
+ * 
+ * @param values - EN: Array of categorical values | PT-BR: Array de valores categóricos
+ * @returns EN: Categorical statistics with distributions | PT-BR: Estatísticas categóricas com distribuições
  */
 export function calculateCategoricalStats(values: unknown[]): CategoricalStats {
   const cleanValues = values
@@ -326,7 +363,14 @@ export function calculateCategoricalStats(values: unknown[]): CategoricalStats {
 }
 
 /**
- * Analisa dataset completo
+ * EN: Analyze complete dataset with all columns
+ * PT-BR: Analisar conjunto de dados completo com todas as colunas
+ * 
+ * EN: Performs comprehensive analysis including variable type detection and statistics calculation for all columns
+ * PT-BR: Realiza análise abrangente incluindo detecção de tipo de variável e cálculo de estatísticas para todas as colunas
+ * 
+ * @param data - EN: Array of data rows | PT-BR: Array de linhas de dados
+ * @returns EN: Complete analysis results | PT-BR: Resultados de análise completos
  */
 export function analyzeDataset(data: Record<string, unknown>[]) {
   if (data.length === 0) {

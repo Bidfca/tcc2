@@ -1,20 +1,32 @@
 /**
- * Analysis Service - Business Logic for Data Analysis
+ * EN: Analysis Service - Business Logic for Data Analysis
+ * PT-BR: Serviço de Análise - Lógica de Negócio para Análise de Dados
  * 
- * This service handles all business logic related to dataset analysis in AgroInsight.
- * It acts as the intermediary between API routes and the database, providing:
- * - CRUD operations for analyses
- * - Data processing and statistical analysis
- * - Diagnostic generation for agricultural datasets
- * - User-specific data access control
+ * EN: This service handles all business logic related to dataset analysis in AgroInsight.
+ *     It acts as the intermediary between API routes and the database, providing:
+ *     - CRUD operations for analyses
+ *     - Data processing and statistical analysis
+ *     - Diagnostic generation for agricultural datasets
+ *     - User-specific data access control
+ * PT-BR: Este serviço gerencia toda a lógica de negócio relacionada à análise de conjuntos de dados no AgroInsight.
+ *        Atua como intermediário entre rotas de API e o banco de dados, fornecendo:
+ *        - Operações CRUD para análises
+ *        - Processamento de dados e análise estatística
+ *        - Geração de diagnósticos para conjuntos de dados agrícolas
+ *        - Controle de acesso a dados específicos do usuário
  * 
- * Key responsibilities:
- * - Fetch user's analyses with proper authorization
- * - Process uploaded CSV files for zootechnical data
- * - Generate statistical summaries and diagnostics
- * - Manage analysis lifecycle (creation, validation, deletion)
+ * EN: Key responsibilities:
+ *     - Fetch user's analyses with proper authorization
+ *     - Process uploaded CSV files for zootechnical data
+ *     - Generate statistical summaries and diagnostics
+ *     - Manage analysis lifecycle (creation, validation, deletion)
+ * PT-BR: Responsabilidades principais:
+ *        - Buscar análises do usuário com autorização adequada
+ *        - Processar arquivos CSV carregados para dados zootécnicos
+ *        - Gerar resumos estatísticos e diagnósticos
+ *        - Gerenciar ciclo de vida da análise (criação, validação, exclusão)
  * 
- * Usage pattern:
+ * @example
  * ```ts
  * const analysisService = new AnalysisService()
  * const result = await analysisService.getUserAnalyses(userId)
@@ -317,7 +329,15 @@ export class AnalysisService {
   }
 
   /**
-   * Gerar diagnóstico para uma análise
+   * EN: Generate diagnostic report for an analysis
+   * PT-BR: Gerar relatório de diagnóstico para uma análise
+   * 
+   * EN: Creates a rule-based diagnostic report using zootechnical references
+   * PT-BR: Cria um relatório de diagnóstico baseado em regras usando referências zootécnicas
+   * 
+   * @param analysisId - EN: Analysis unique identifier | PT-BR: Identificador único da análise
+   * @param userId - EN: User ID for authorization | PT-BR: ID do usuário para autorização
+   * @returns EN: ServiceResult with diagnostic report | PT-BR: ServiceResult com relatório de diagnóstico
    */
   async generateDiagnostic(
     analysisId: string,
@@ -366,7 +386,15 @@ export class AnalysisService {
   }
 
   /**
-   * Deletar análise
+   * EN: Delete an analysis
+   * PT-BR: Deletar uma análise
+   * 
+   * EN: Removes an analysis from the database with authorization check
+   * PT-BR: Remove uma análise do banco de dados com verificação de autorização
+   * 
+   * @param analysisId - EN: Analysis unique identifier | PT-BR: Identificador único da análise
+   * @param userId - EN: User ID for authorization | PT-BR: ID do usuário para autorização
+   * @returns EN: ServiceResult indicating success or failure | PT-BR: ServiceResult indicando sucesso ou falha
    */
   async deleteAnalysis(analysisId: string, userId: string): Promise<ServiceResult<void>> {
     try {
@@ -410,7 +438,14 @@ export class AnalysisService {
   }
 
   /**
-   * Obter estatísticas de análises do usuário
+   * EN: Get user's analytics statistics
+   * PT-BR: Obter estatísticas de análises do usuário
+   * 
+   * EN: Calculates aggregate statistics across all user analyses
+   * PT-BR: Calcula estatísticas agregadas em todas as análises do usuário
+   * 
+   * @param userId - EN: User unique identifier | PT-BR: Identificador único do usuário
+   * @returns EN: ServiceResult with statistics summary | PT-BR: ServiceResult com resumo de estatísticas
    */
   async getUserAnalyticsStats(userId: string): Promise<ServiceResult<{
     totalAnalyses: number

@@ -1,11 +1,17 @@
 /**
- * LaymanTab - Main component for Layman Visualization Tab
+ * EN: LaymanTab - Main component for Layman Visualization Tab
+ * PT-BR: LaymanTab - Componente principal para Aba de Visualização Leiga
  * 
- * Displays analysis data in an intuitive, accessible format using:
- * - Color-coded visualizations (red/yellow/green)
- * - Simple language
- * - Visual silhouettes and icons
- * - Toggle between layman and technical views
+ * EN: Displays analysis data in an intuitive, accessible format using:
+ *     - Color-coded visualizations (red/yellow/green)
+ *     - Simple language
+ *     - Visual silhouettes and icons
+ *     - Toggle between layman and technical views
+ * PT-BR: Exibe dados de análise em formato intuitivo e acessível usando:
+ *        - Visualizações codificadas por cores (vermelho/amarelo/verde)
+ *        - Linguagem simples
+ *        - Silhuetas visuais e ícones
+ *        - Alternância entre visualizações leiga e técnica
  */
 
 'use client'

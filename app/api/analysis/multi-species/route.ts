@@ -1,3 +1,14 @@
+/**
+ * EN: Multi-species analysis API endpoint - handles species-aware data upload and validation
+ * PT-BR: Endpoint de API de análise multi-espécie - gerencia upload e validação de dados com consciência de espécie
+ * 
+ * EN: This endpoint processes CSV uploads for different animal species (bovine, swine, poultry, etc.),
+ *     validates data against species-specific reference ranges from NRC/EMBRAPA, calculates statistics,
+ *     analyzes correlations, and stores results in the database.
+ * PT-BR: Este endpoint processa uploads CSV para diferentes espécies animais (bovinos, suínos, aves, etc.),
+ *        valida dados contra faixas de referência específicas da espécie do NRC/EMBRAPA, calcula estatísticas,
+ *        analisa correlações e armazena resultados no banco de dados.
+ */
 // app/api/analysis/multi-species/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
@@ -9,8 +20,14 @@ import { validateUploadedFile, generateUniqueFilename } from '@/lib/upload-secur
 import { withRateLimit } from '@/lib/rate-limit'
 import { analyzeCorrelations, proposeCorrelations, getMissingVariables } from '@/lib/correlations/correlation-analysis'
 
+/**
+ * EN: POST handler for multi-species data analysis
+ * PT-BR: Handler POST para análise de dados multi-espécie
+ * 
+ * @param request - EN: FormData with file, species, subtype, projectId | PT-BR: FormData com file, species, subtype, projectId
+ * @returns EN: Analysis results with statistics, references, and correlations | PT-BR: Resultados da análise com estatísticas, referências e correlações
+ */
 export async function POST(request: NextRequest) {
-  // Apply rate limiting
   const rateLimitResponse = await withRateLimit(request, 'UPLOAD')
   if (rateLimitResponse) return rateLimitResponse
   
@@ -201,7 +218,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Função para calcular estatísticas básicas
+/**
+ * EN: Calculate basic statistical measures for all numeric columns in the dataset
+ * PT-BR: Calcular medidas estatísticas básicas para todas as colunas numéricas no conjunto de dados
+ * 
+ * @param data - EN: Array of data rows with numeric values | PT-BR: Array de linhas de dados com valores numéricos
+ * @returns EN: Statistics object with means, medians, standard deviations, CVs, mins, maxs, counts | PT-BR: Objeto de estatísticas com médias, medianas, desvios padrão, CVs, mínimos, máximos, contagens
+ */
 function calculateBasicStatistics(data: Record<string, number>[]) {
   const numericColumns = Object.keys(data[0] || {}).filter(
     key => typeof data[0][key] === 'number'
@@ -243,7 +266,18 @@ function calculateBasicStatistics(data: Record<string, number>[]) {
   return stats
 }
 
-// Função para gerar interpretação básica
+/**
+ * EN: Generate human-readable interpretation of analysis results with insights and recommendations
+ * PT-BR: Gerar interpretação legível dos resultados da análise com insights e recomendações
+ * 
+ * EN: Analyzes validation results and statistics to provide actionable insights and species-specific recommendations
+ * PT-BR: Analisa resultados de validação e estatísticas para fornecer insights acionáveis e recomendações específicas da espécie
+ * 
+ * @param stats - EN: Statistical measures | PT-BR: Medidas estatísticas
+ * @param references - EN: Reference comparison results | PT-BR: Resultados de comparação de referência
+ * @param species - EN: Animal species code | PT-BR: Código da espécie animal
+ * @returns EN: Interpretation with insights, recommendations, and summary | PT-BR: Interpretação com insights, recomendações e resumo
+ */
 function generateBasicInterpretation(
   stats: ReturnType<typeof calculateBasicStatistics>,
   references: ReturnType<typeof ReferenceDataService.compareMultipleMetrics>,
