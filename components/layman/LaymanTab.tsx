@@ -65,8 +65,16 @@ export function LaymanTab({ analysisData, entityType }: LaymanTabProps) {
         // Evaluate metrics
         const result = await laymanService.evaluateMetrics(request)
         
-        // Get full layman view with legend
-        const laymanView = await laymanService.getLaymanAnnotation(result.entity_id)
+        // Convert EvaluationResponse to LaymanViewResponse by adding legend
+        const laymanView: LaymanViewResponse = {
+          ...result,
+          legend: [
+            { color: 'red', meaning: 'Ruim — ação necessária' },
+            { color: 'yellow', meaning: 'Ok — monitorar' },
+            { color: 'green', meaning: 'Ótimo — sem ação' }
+          ],
+          technical_view_url: null
+        }
         
         setEvaluation(laymanView)
       } catch (err) {

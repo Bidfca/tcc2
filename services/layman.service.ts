@@ -175,7 +175,7 @@ export class LaymanService {
       ? numericStats as Record<string, { mean?: number }>
       : {}
     
-    // Helper function to safely get mean value
+    // Helper function to safely get mean value with multiple possible field names
     const getMeanValue = (...keys: string[]): number | undefined => {
       for (const key of keys) {
         const value = metrics[key]?.mean
@@ -191,13 +191,13 @@ export class LaymanService {
       farm_id: farmId,
       entity_type: entityType,
       metric_values: {
-        peso_kg: getMeanValue('peso', 'peso_kg'),
-        gmd_7d_kg_per_day: getMeanValue('gmd_7d'),
-        gmd_30d_kg_per_day: getMeanValue('gmd_30d'),
-        bcs: getMeanValue('bcs'),
-        biomassa_kg_ha: getMeanValue('biomassa'),
-        cobertura_pct: getMeanValue('cobertura'),
-        indice_visual: getMeanValue('indice'),
+        peso_kg: getMeanValue('PESO_ATUAL_KG', 'peso_atual_kg', 'peso', 'peso_kg'),
+        gmd_7d_kg_per_day: getMeanValue('GPD', 'gmd_7d', 'gmd_30d'),
+        gmd_30d_kg_per_day: getMeanValue('GPD', 'gmd_30d', 'gmd_7d'),
+        bcs: getMeanValue('ESCORE_CORPORAL', 'escore_corporal', 'bcs'),
+        biomassa_kg_ha: getMeanValue('BIOMASSA_KG_HA', 'biomassa_kg_ha', 'biomassa'),
+        cobertura_pct: getMeanValue('COBERTURA_PCT', 'cobertura_pct', 'cobertura'),
+        indice_visual: getMeanValue('INDICE_VISUAL', 'indice_visual', 'indice'),
       }
     }
   }
